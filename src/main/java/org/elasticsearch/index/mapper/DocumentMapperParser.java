@@ -37,6 +37,7 @@ import org.elasticsearch.index.analysis.AnalysisService;
 import org.elasticsearch.index.analysis.NamedAnalyzer;
 import org.elasticsearch.index.codec.postingsformat.PostingsFormatService;
 import org.elasticsearch.index.mapper.core.*;
+import org.elasticsearch.index.mapper.geo.GeoCircleFieldMapper;
 import org.elasticsearch.index.mapper.geo.GeoPointFieldMapper;
 import org.elasticsearch.index.mapper.geo.GeoShapeFieldMapper;
 import org.elasticsearch.index.mapper.internal.*;
@@ -94,7 +95,8 @@ public class DocumentMapperParser extends AbstractIndexComponent {
                 .put(ObjectMapper.CONTENT_TYPE, new ObjectMapper.TypeParser())
                 .put(ObjectMapper.NESTED_CONTENT_TYPE, new ObjectMapper.TypeParser())
                 .put(MultiFieldMapper.CONTENT_TYPE, new MultiFieldMapper.TypeParser())
-                .put(GeoPointFieldMapper.CONTENT_TYPE, new GeoPointFieldMapper.TypeParser());
+                .put(GeoPointFieldMapper.CONTENT_TYPE, new GeoPointFieldMapper.TypeParser())
+                .put(GeoCircleFieldMapper.CONTENT_TYPE, new GeoCircleFieldMapper.TypeParser());
 
         if (ShapesAvailability.JTS_AVAILABLE) {
             typeParsersBuilder.put(GeoShapeFieldMapper.CONTENT_TYPE, new GeoShapeFieldMapper.TypeParser());
