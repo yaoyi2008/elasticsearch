@@ -19,6 +19,8 @@
 
 package org.elasticsearch.common.geo;
 
+import com.spatial4j.core.distance.DistanceUtils;
+import com.spatial4j.core.shape.Circle;
 import com.spatial4j.core.shape.Rectangle;
 import com.spatial4j.core.shape.Shape;
 import com.spatial4j.core.shape.jts.JtsGeometry;
@@ -66,11 +68,28 @@ public class GeoJSONShapeSerializer {
             }
         } else if (shape instanceof com.spatial4j.core.shape.Point) {
             serializePoint((com.spatial4j.core.shape.Point) shape, builder);
+        } else if (shape instanceof Circle) {
+            serializeCircle((Circle) shape, builder);
         } else if (shape instanceof Rectangle) {
             serializeRectangle((Rectangle) shape, builder);
         } else {
             throw new ElasticSearchIllegalArgumentException("Shape type [" + shape.getClass().getSimpleName() + "] not supported");
         }
+    }
+
+    /**
+     * Serializes the given {@link Circle}
+     *
+     * @param circle    Circle that will be serialized
+     * @param builder   XContentBuilder it will be serialized to
+     * @throws IOException Thrown if an error occurs while writing to the XContentBuilder
+     */
+    private static void serializeCircle(Circle circle, XContentBuilder builder) throws IOException {
+        builder.field("type", "Circle")
+                .startArray("coordinates")
+                    .value(circle.getCenter().getX()).value(circle.getCenter().getY())
+                .endArray()
+                .field("radius", DistanceUtils.degrees2Dist(circle.getRadius(), DistanceUtils.EARTH_MEAN_RADIUS_KM));
     }
 
     /**

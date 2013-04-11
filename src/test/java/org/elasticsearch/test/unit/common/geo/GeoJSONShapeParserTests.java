@@ -1,9 +1,12 @@
 package org.elasticsearch.test.unit.common.geo;
 
-import com.spatial4j.core.shape.Shape;
+import com.spatial4j.core.distance.DistanceUtils;
+import com.spatial4j.core.shape.*;
+import com.spatial4j.core.shape.impl.CircleImpl;
 import com.spatial4j.core.shape.jts.JtsGeometry;
 import com.spatial4j.core.shape.jts.JtsPoint;
 import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.geom.Point;
 import org.elasticsearch.common.geo.GeoJSONShapeParser;
 import org.elasticsearch.common.geo.GeoShapeConstants;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -15,6 +18,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.testng.Assert.assertEquals;
 
 /**
@@ -229,6 +234,47 @@ public class GeoJSONShapeParserTests {
 
         Point expected = GEOMETRY_FACTORY.createPoint(new Coordinate(100.0, 0.0));
         assertGeometryEquals(new JtsPoint(expected, GeoShapeConstants.SPATIAL_CONTEXT), pointGeoJson);
+    }
+
+    @Test
+    public void testThatCircleCanBeParsed() throws IOException {
+        double radiusInKm = 4.2; // setting this to 2.0 gives us rounding errors... sucks
+
+        String circleJson = XContentFactory.jsonBuilder().startObject().field("type", "Circle")
+                .startArray("coordinates").value(100.0).value(10.0).endArray()
+                .field("radius", radiusInKm)
+                .endObject().string();
+
+        double dist = radiusInKm / ( DistanceUtils.DEGREES_TO_RADIANS * DistanceUtils.EARTH_MEAN_RADIUS_KM);
+        Circle expected = GeoShapeConstants.SPATIAL_CONTEXT.makeCircle(100, 10, dist);
+        assertGeometryEquals(expected, circleJson);
+    }
+
+    // TODO: Remove me again after everything works
+    @Test
+    public void spatialTest() throws Exception {
+        //com.spatial4j.core.shape.Point parkHotelAmsterdam = GeoShapeConstants.SPATIAL_CONTEXT.makePoint(52.362105, 4.883208);
+        //com.spatial4j.core.shape.Point schiphol = GeoShapeConstants.SPATIAL_CONTEXT.makePoint(52.313096, 4.77253);
+        com.spatial4j.core.shape.Point parkHotelAmsterdam = GeoShapeConstants.SPATIAL_CONTEXT.makePoint(4.883208, 52.362105);
+        com.spatial4j.core.shape.Point schiphol = GeoShapeConstants.SPATIAL_CONTEXT.makePoint(4.77253, 52.313096);
+
+        double dist15km = 10.0 / ( DistanceUtils.DEGREES_TO_RADIANS * DistanceUtils.EARTH_MEAN_RADIUS_KM);
+        //com.spatial4j.core.shape.Point amsterdam = GeoShapeConstants.SPATIAL_CONTEXT.makePoint(52.37125, 4.895439);
+        com.spatial4j.core.shape.Point amsterdam = GeoShapeConstants.SPATIAL_CONTEXT.makePoint(4.895439, 52.37125);
+        Circle amsterdamCityCircle = new CircleImpl(amsterdam, dist15km, GeoShapeConstants.SPATIAL_CONTEXT);
+
+        assertThat(parkHotelAmsterdam.relate(amsterdamCityCircle).intersects(), is(true));
+        assertThat(amsterdamCityCircle.relate(parkHotelAmsterdam).intersects(), is(true));
+        assertThat(amsterdamCityCircle.relate(schiphol).intersects(), is(false));
+        assertThat(schiphol.relate(amsterdamCityCircle).intersects(), is(false));
+
+        double dist25km = 25.0 / ( DistanceUtils.DEGREES_TO_RADIANS * DistanceUtils.EARTH_MEAN_RADIUS_KM);
+        amsterdamCityCircle = new CircleImpl(amsterdam, dist25km, GeoShapeConstants.SPATIAL_CONTEXT);
+
+        assertThat(parkHotelAmsterdam.relate(amsterdamCityCircle).intersects(), is(true));
+        assertThat(amsterdamCityCircle.relate(parkHotelAmsterdam).intersects(), is(true));
+        assertThat(amsterdamCityCircle.relate(schiphol).intersects(), is(true));
+        assertThat(schiphol.relate(amsterdamCityCircle).intersects(), is(true));
     }
 
     private void assertGeometryEquals(Shape expected, String geoJson) throws IOException {
