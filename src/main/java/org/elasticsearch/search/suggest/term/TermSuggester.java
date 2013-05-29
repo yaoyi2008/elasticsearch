@@ -68,12 +68,6 @@ public final class TermSuggester implements Suggester<TermSuggestionContext> {
         return new String[] {"term"};
     }
 
-    @Override
-    public SuggestContextParser getContextParser() {
-        return new TermSuggestParser();
-    }
-
-
     private List<Token> queryTerms(SuggestionContext suggestion, CharsRef spare) throws IOException {
         final List<Token> result = new ArrayList<TermSuggester.Token>();
         final String field = suggestion.getField();

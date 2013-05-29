@@ -24,6 +24,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.ElasticSearchIllegalArgumentException;
+import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentParser.Token;
 import org.elasticsearch.index.analysis.ShingleTokenFilterFactory;
@@ -35,7 +36,17 @@ import org.elasticsearch.search.suggest.phrase.PhraseSuggestionContext.DirectCan
 
 public final class PhraseSuggestParser implements SuggestContextParser {
 
-    private final PhraseSuggester suggester = new PhraseSuggester();
+    private PhraseSuggester suggester;
+
+    @Inject
+    public PhraseSuggestParser(PhraseSuggester suggester) {
+        this.suggester = suggester;
+    }
+
+    @Override
+    public String[] names() {
+        return new String[] {"phrase"};
+    }
 
     public SuggestionSearchContext.SuggestionContext parse(XContentParser parser, MapperService mapperService) throws IOException {
         PhraseSuggestionContext suggestion = new PhraseSuggestionContext(suggester);

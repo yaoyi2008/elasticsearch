@@ -21,10 +21,7 @@ package org.elasticsearch.test.integration.search.suggest;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.util.CharsRef;
 import org.elasticsearch.common.text.StringText;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.index.mapper.MapperService;
 import org.elasticsearch.search.suggest.Suggest;
-import org.elasticsearch.search.suggest.SuggestContextParser;
 import org.elasticsearch.search.suggest.Suggester;
 import org.elasticsearch.search.suggest.SuggestionSearchContext;
 
@@ -36,7 +33,6 @@ import java.util.Map;
  *
  */
 public class CustomSuggester implements Suggester<CustomSuggester.CustomSuggestionsContext> {
-
 
     // This is a pretty dumb implementation which returns the original text + fieldName + custom config option + 12 or 123
     @Override
@@ -61,19 +57,6 @@ public class CustomSuggester implements Suggester<CustomSuggester.CustomSuggesti
     @Override
     public String[] names() {
         return new String[] {"custom"};
-    }
-
-    @Override
-    public SuggestContextParser getContextParser() {
-        return new SuggestContextParser() {
-            @Override
-            public SuggestionSearchContext.SuggestionContext parse(XContentParser parser, MapperService mapperService) throws IOException {
-                Map<String, Object> options = parser.map();
-                CustomSuggestionsContext suggestionContext = new CustomSuggestionsContext(CustomSuggester.this, options);
-                suggestionContext.setField((String) options.get("field"));
-                return suggestionContext;
-            }
-        };
     }
 
     public static class CustomSuggestionsContext extends SuggestionSearchContext.SuggestionContext {

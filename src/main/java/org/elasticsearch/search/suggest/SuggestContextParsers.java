@@ -17,19 +17,33 @@
  * under the License.
  */
 package org.elasticsearch.search.suggest;
-import java.io.IOException;
 
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.util.CharsRef;
-import org.elasticsearch.search.suggest.Suggest.Suggestion;
-import org.elasticsearch.search.suggest.Suggest.Suggestion.Entry;
-import org.elasticsearch.search.suggest.Suggest.Suggestion.Entry.Option;
+import com.google.common.collect.ImmutableMap;
+import org.elasticsearch.common.collect.MapBuilder;
+import org.elasticsearch.common.inject.Inject;
 
-public interface Suggester<T extends SuggestionSearchContext.SuggestionContext> {
+import java.util.Set;
 
-    public Suggestion<? extends Entry<? extends Option>> execute(String name, T suggestion, IndexReader indexReader, CharsRef spare)
-            throws IOException;
+/**
+ *
+ */
+public class SuggestContextParsers {
+    private final ImmutableMap<String, SuggestContextParser> parsers;
 
-    public String[] names();
+    @Inject
+    public SuggestContextParsers(Set<SuggestContextParser> suggesters) {
+        MapBuilder<String, SuggestContextParser> builder = MapBuilder.newMapBuilder();
+        for (SuggestContextParser suggestContextParser : suggesters) {
+            for (String type : suggestContextParser.names()) {
+                builder.put(type, suggestContextParser);
+            }
+        }
+        this.parsers = builder.immutableMap();
+    }
+
+    public SuggestContextParser get(String type) {
+        return parsers.get(type);
+    }
+
 
 }

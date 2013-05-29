@@ -33,11 +33,12 @@ import org.elasticsearch.search.suggest.SuggestionSearchContext.SuggestionContex
  *
  */
 public class SuggestParseElement implements SearchParseElement {
-    private Suggesters suggesters;
+
+    private SuggestContextParsers suggestContextParsers;
 
     @Inject
-    public SuggestParseElement(Suggesters suggesters) {
-        this.suggesters = suggesters;
+    public SuggestParseElement(SuggestContextParsers suggestContextParsers) {
+        this.suggestContextParsers = suggestContextParsers;
     }
 
     @Override
@@ -77,10 +78,10 @@ public class SuggestParseElement implements SearchParseElement {
                         if (suggestionName == null) {
                             throw new ElasticSearchIllegalArgumentException("Suggestion must have name");
                         }
-                        if (suggesters.get(fieldName) == null) {
-                            throw new ElasticSearchIllegalArgumentException("Suggester[" + fieldName + "] not supported");
+                        if (suggestContextParsers.get(fieldName) == null) {
+                            throw new ElasticSearchIllegalArgumentException("Suggester context parser[" + fieldName + "] not supported");
                         }
-                        final SuggestContextParser contextParser = suggesters.get(fieldName).getContextParser();
+                        final SuggestContextParser contextParser = suggestContextParsers.get(fieldName);
                         parseAndVerify(parser, mapperService, suggestionSearchContext, globalText, suggestionName, suggestText, contextParser);
                     }
                 }

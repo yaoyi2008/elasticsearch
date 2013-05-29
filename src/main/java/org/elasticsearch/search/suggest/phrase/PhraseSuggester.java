@@ -87,9 +87,4 @@ public final class PhraseSuggester implements Suggester<PhraseSuggestionContext>
         return new String[] {"phrase"};
     }
 
-    @Override
-    public SuggestContextParser getContextParser() {
-        return new PhraseSuggestParser();
-    }
-
 }

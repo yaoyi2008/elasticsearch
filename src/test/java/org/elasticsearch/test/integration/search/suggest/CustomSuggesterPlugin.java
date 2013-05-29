@@ -37,7 +37,7 @@ public class CustomSuggesterPlugin extends AbstractPlugin {
     }
 
     public void onModule(SuggestModule suggestModule) {
-        suggestModule.registerSuggester(CustomSuggester.class);
+        suggestModule.registerSuggester(CustomSuggester.class, CustomSuggesterContextParser.class);
     }
 
 }

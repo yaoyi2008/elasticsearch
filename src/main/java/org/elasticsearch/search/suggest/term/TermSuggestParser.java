@@ -21,6 +21,7 @@ package org.elasticsearch.search.suggest.term;
 import java.io.IOException;
 
 import org.elasticsearch.ElasticSearchIllegalArgumentException;
+import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.index.mapper.MapperService;
 import org.elasticsearch.search.suggest.DirectSpellcheckerSettings;
@@ -29,7 +30,13 @@ import org.elasticsearch.search.suggest.SuggestUtils;
 import org.elasticsearch.search.suggest.SuggestionSearchContext;
 
 public final class TermSuggestParser implements SuggestContextParser {
-    private final TermSuggester suggester = new TermSuggester();
+
+    private TermSuggester suggester;
+
+    @Inject
+    public TermSuggestParser(TermSuggester suggester) {
+        this.suggester = suggester;
+    }
 
     public SuggestionSearchContext.SuggestionContext parse(XContentParser parser, MapperService mapperService) throws IOException {
         XContentParser.Token token;
@@ -46,6 +53,11 @@ public final class TermSuggestParser implements SuggestContextParser {
             }
         }
         return suggestion;
+    }
+
+    @Override
+    public String[] names() {
+        return new String[] {"term"};
     }
 
     private void parseTokenValue(XContentParser parser, MapperService mapperService, String fieldName, TermSuggestionContext suggestion,

@@ -21,7 +21,9 @@ package org.elasticsearch.search.suggest;
 import com.google.common.collect.Lists;
 import org.elasticsearch.common.inject.AbstractModule;
 import org.elasticsearch.common.inject.multibindings.Multibinder;
+import org.elasticsearch.search.suggest.phrase.PhraseSuggestParser;
 import org.elasticsearch.search.suggest.phrase.PhraseSuggester;
+import org.elasticsearch.search.suggest.term.TermSuggestParser;
 import org.elasticsearch.search.suggest.term.TermSuggester;
 
 import java.util.List;
@@ -32,18 +34,25 @@ import java.util.List;
 public class SuggestModule extends AbstractModule {
 
     private List<Class<? extends Suggester>> suggesters = Lists.newArrayList();
+    private List<Class<? extends SuggestContextParser>> suggestContextParsers = Lists.newArrayList();
 
     public SuggestModule() {
-        registerSuggester(PhraseSuggester.class);
-        registerSuggester(TermSuggester.class);
+        registerSuggester(PhraseSuggester.class, PhraseSuggestParser.class);
+        registerSuggester(TermSuggester.class, TermSuggestParser.class);
     }
 
-    public void registerSuggester(Class<? extends Suggester> suggester) {
+    public void registerSuggester(Class<? extends Suggester> suggester, Class<? extends SuggestContextParser> suggestContextParser) {
         suggesters.add(suggester);
+        suggestContextParsers.add(suggestContextParser);
     }
 
     @Override
     protected void configure() {
+        Multibinder<SuggestContextParser> suggestContextParserMultibinder = Multibinder.newSetBinder(binder(), SuggestContextParser.class);
+        for (Class<? extends SuggestContextParser> clazz : suggestContextParsers) {
+            suggestContextParserMultibinder.addBinding().to(clazz);
+        }
+
         Multibinder<Suggester> suggesterMultibinder = Multibinder.newSetBinder(binder(), Suggester.class);
         for (Class<? extends Suggester> clazz : suggesters) {
             suggesterMultibinder.addBinding().to(clazz);

@@ -26,4 +26,6 @@ import org.elasticsearch.index.mapper.MapperService;
 public interface SuggestContextParser {
     public SuggestionSearchContext.SuggestionContext parse(XContentParser parser, MapperService mapperService) throws IOException;
 
+    public String[] names();
+
 }
