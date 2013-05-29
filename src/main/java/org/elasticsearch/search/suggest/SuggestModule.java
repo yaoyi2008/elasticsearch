@@ -23,6 +23,7 @@ import org.elasticsearch.common.inject.AbstractModule;
 import org.elasticsearch.common.inject.multibindings.Multibinder;
 import org.elasticsearch.search.suggest.phrase.PhraseSuggester;
 import org.elasticsearch.search.suggest.term.TermSuggester;
+import org.elasticsearch.search.suggest.wfst.WfstSuggester;
 
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class SuggestModule extends AbstractModule {
     public SuggestModule() {
         registerSuggester(PhraseSuggester.class);
         registerSuggester(TermSuggester.class);
+        registerSuggester(WfstSuggester.class);
     }
 
     public void registerSuggester(Class<? extends Suggester> suggester) {
