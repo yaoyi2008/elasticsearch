@@ -16,18 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.elasticsearch.search.suggest.wfst;
+package org.elasticsearch.search.suggest.nrt;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
+import org.apache.lucene.analysis.tokenattributes.PayloadAttributeImpl;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.spell.TermFreqIterator;
 import org.apache.lucene.search.suggest.Lookup;
+import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.CharsRef;
 import org.elasticsearch.common.text.StringText;
+import org.elasticsearch.index.analysis.SuggestTokenFilter;
 import org.elasticsearch.search.suggest.Suggest;
 import org.elasticsearch.search.suggest.SuggestContextParser;
 import org.elasticsearch.search.suggest.Suggester;
+import org.elasticsearch.search.suggest.wfst.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,7 +43,7 @@ import java.util.Map;
  * DONE: copy wfst completion lookup and make it cheap :)
  *
  */
-public class WfstSuggester implements Suggester<WfstSuggestionContext> {
+public class NrtSuggester extends WfstSuggester {
 
     // static per JVM... erm, uhm, sucks, can be changed as this is guice wired
     // make me a frigging google cache in order to get it nice
@@ -65,18 +71,45 @@ public class WfstSuggester implements Suggester<WfstSuggestionContext> {
         for (AtomicReaderContext atomicReaderContext : indexReader.leaves()) {
             AtomicReader atomicReader = atomicReaderContext.reader();
 
+            /*
             List<Lookup.LookupResult> lookupResults = indexReaderLookups.get(atomicReader).lookup(fieldName, suggestion.getText().utf8ToString(), suggestion.getSize());
             for (Lookup.LookupResult lookupResult : lookupResults) {
                 wfstSuggestionEntry.addOption(new WfstSuggestion.Entry.Option(new StringText(lookupResult.key.toString()), 1.0f));
             }
-        }
+            */
+
+            Terms terms = atomicReader.fields().terms(fieldName);
+            TermsEnum termsEnum = terms.iterator(null);
+            BytesRef term = null;
+            String origTerm = null;
+            DocsAndPositionsEnum docsAndPositionsEnum = null;
+            while ((term = termsEnum.next()) != null) {
+                docsAndPositionsEnum = termsEnum.docsAndPositions(null, docsAndPositionsEnum);
+                docsAndPositionsEnum.nextPosition();
+                origTerm = term.utf8ToString();
+//            if (docsAndPositionsEnum.getPayload() != null) {
+//                System.out.println(docsAndPositionsEnum.getPayload().utf8ToString());
+//            }
+            }
+
+            BytesRef payload = docsAndPositionsEnum.getPayload();
+            if (payload != null) {
+                wfstSuggestionEntry.addOption(new WfstSuggestion.Entry.Option(new StringText(payload.utf8ToString()), 1.0f));
+            }
+
+            docsAndPositionsEnum.nextPosition();
+            CharTermAttribute suggestTermAttribute = docsAndPositionsEnum.attributes().addAttribute(CharTermAttribute.class);
+
+            System.out.println(origTerm);
+
+       }
 
         return wfstSuggestion;
     }
 
     @Override
     public String[] names() {
-        return new String[] { "wfst" };
+        return new String[] { "nrt" };
     }
 
     @Override

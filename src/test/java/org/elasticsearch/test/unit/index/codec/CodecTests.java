@@ -109,6 +109,11 @@ public class CodecTests {
         assertThat(postingsFormatService.get("direct").get(), instanceOf(DirectPostingsFormat.class));
         assertThat(postingsFormatService.get("Direct"), instanceOf(PreBuiltPostingsFormatProvider.class));
         assertThat(postingsFormatService.get("Direct").get(), instanceOf(DirectPostingsFormat.class));
+
+        assertThat(postingsFormatService.get("suggest"), instanceOf(PreBuiltPostingsFormatProvider.class));
+        assertThat(postingsFormatService.get("suggest").get(), instanceOf(SuggestPostingsFormat.class));
+        assertThat(postingsFormatService.get("Suggest"), instanceOf(PreBuiltPostingsFormatProvider.class));
+        assertThat(postingsFormatService.get("Suggest").get(), instanceOf(SuggestPostingsFormat.class));
     }
 
     @Test

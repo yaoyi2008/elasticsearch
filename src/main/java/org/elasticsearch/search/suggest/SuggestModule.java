@@ -21,6 +21,7 @@ package org.elasticsearch.search.suggest;
 import com.google.common.collect.Lists;
 import org.elasticsearch.common.inject.AbstractModule;
 import org.elasticsearch.common.inject.multibindings.Multibinder;
+import org.elasticsearch.search.suggest.nrt.NrtSuggester;
 import org.elasticsearch.search.suggest.phrase.PhraseSuggester;
 import org.elasticsearch.search.suggest.term.TermSuggester;
 import org.elasticsearch.search.suggest.wfst.WfstSuggester;
@@ -38,6 +39,7 @@ public class SuggestModule extends AbstractModule {
         registerSuggester(PhraseSuggester.class);
         registerSuggester(TermSuggester.class);
         registerSuggester(WfstSuggester.class);
+        registerSuggester(NrtSuggester.class);
     }
 
     public void registerSuggester(Class<? extends Suggester> suggester) {
