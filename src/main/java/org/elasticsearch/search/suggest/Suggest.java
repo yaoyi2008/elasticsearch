@@ -29,6 +29,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentBuilderString;
 import org.elasticsearch.search.suggest.Suggest.Suggestion.Entry;
 import org.elasticsearch.search.suggest.Suggest.Suggestion.Entry.Option;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
 import org.elasticsearch.search.suggest.term.TermSuggestion;
 
 import java.io.IOException;
@@ -113,6 +114,9 @@ public class Suggest implements Iterable<Suggest.Suggestion<? extends Entry<? ex
             switch (type) {
             case TermSuggestion.TYPE:
                 suggestion = new TermSuggestion();
+                break;
+            case CompletionSuggestion.TYPE:
+                suggestion = new CompletionSuggestion();
                 break;
             default:
                 suggestion = new Suggestion<Entry<Option>>();
@@ -503,6 +507,8 @@ public class Suggest implements Iterable<Suggest.Suggestion<? extends Entry<? ex
                     this.text = text;
                     this.score = score;
                 }
+                
+                
 
                 public Option() {
                 }
@@ -520,6 +526,10 @@ public class Suggest implements Iterable<Suggest.Suggestion<? extends Entry<? ex
                  */
                 public float getScore() {
                     return score;
+                }
+                
+                protected void setScore(float score) {
+                    this.score = score;
                 }
 
                 @Override

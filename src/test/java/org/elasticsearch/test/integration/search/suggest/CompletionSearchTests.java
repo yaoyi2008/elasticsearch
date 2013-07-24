@@ -50,12 +50,11 @@ import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 import static org.elasticsearch.search.suggest.SuggestBuilder.phraseSuggestion;
 import static org.elasticsearch.search.suggest.SuggestBuilder.termSuggestion;
 import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertSuggestionSize;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 /**
  */
-public class SuggestSearchTests extends AbstractSharedClusterTest {
+public class CompletionSearchTests extends AbstractSharedClusterTest {
     
     @Test // see #3037
     public void testSuggestModes() throws IOException {
@@ -547,7 +546,7 @@ public class SuggestSearchTests extends AbstractSharedClusterTest {
         
         client().admin().indices().prepareCreate("test").setSettings(builder.build()).addMapping("type1", mapping).execute().actionGet();
         client().admin().cluster().prepareHealth("test").setWaitForGreenStatus().execute().actionGet();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(SuggestSearchTests.class.getResourceAsStream("/config/names.txt"), Charsets.UTF_8));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(CompletionSearchTests.class.getResourceAsStream("/config/names.txt"), Charsets.UTF_8));
         String line = null;
         while ((line = reader.readLine()) != null) {
             client().prepareIndex("test", "type1")
@@ -913,7 +912,7 @@ public class SuggestSearchTests extends AbstractSharedClusterTest {
         
         client().admin().indices().prepareCreate("test").setSettings(builder.build()).addMapping("type1", mapping).execute().actionGet();
         client().admin().cluster().prepareHealth("test").setWaitForGreenStatus().execute().actionGet();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(SuggestSearchTests.class.getResourceAsStream("/config/names.txt"), Charsets.UTF_8));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(CompletionSearchTests.class.getResourceAsStream("/config/names.txt"), Charsets.UTF_8));
         String line = null;
         while ((line = reader.readLine()) != null) {
             client().prepareIndex("test", "type1")

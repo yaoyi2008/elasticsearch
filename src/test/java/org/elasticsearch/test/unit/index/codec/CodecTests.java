@@ -23,7 +23,6 @@ import org.apache.lucene.codecs.Codec;
 import org.apache.lucene.codecs.bloom.BloomFilteringPostingsFormat;
 import org.apache.lucene.codecs.lucene40.Lucene40Codec;
 import org.apache.lucene.codecs.lucene41.Lucene41Codec;
-import org.apache.lucene.codecs.lucene41.Lucene41PostingsFormat;
 import org.apache.lucene.codecs.memory.DirectPostingsFormat;
 import org.apache.lucene.codecs.memory.MemoryPostingsFormat;
 import org.apache.lucene.codecs.perfield.PerFieldPostingsFormat;

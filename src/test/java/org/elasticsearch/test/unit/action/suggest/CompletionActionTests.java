@@ -26,7 +26,7 @@ import org.elasticsearch.action.suggest.SuggestResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.suggest.Suggest;
 import org.elasticsearch.search.suggest.SuggestBuilder.SuggestionBuilder;
-import org.elasticsearch.test.integration.search.suggest.SuggestSearchTests;
+import org.elasticsearch.test.integration.search.suggest.CompletionSearchTests;
 
 import java.util.Arrays;
 
@@ -35,7 +35,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 /**
  */
-public class SuggestActionTests extends SuggestSearchTests {
+public class CompletionActionTests extends CompletionSearchTests {
 
     protected Suggest searchSuggest(Client client, String suggestText, int expectShardsFailed, SuggestionBuilder<?>... suggestions) {
         SuggestRequestBuilder builder = client.prepareSuggest();

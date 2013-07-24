@@ -1134,6 +1134,7 @@ public class RobinEngine extends AbstractIndexShardComponent implements Engine {
                     segment.delDocCount = reader.reader().numDeletedDocs();
                     segment.version = info.info.getVersion();
                     segment.compound = info.info.getUseCompoundFile();
+
                     try {
                         segment.sizeInBytes = info.sizeInBytes();
                     } catch (IOException e) {
