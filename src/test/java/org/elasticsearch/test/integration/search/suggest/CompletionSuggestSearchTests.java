@@ -267,6 +267,34 @@ public class CompletionSuggestSearchTests extends AbstractSharedClusterTest {
     }
 
     @Test
+    public void testThatHighlightingIsSupported() throws Exception {
+        createIndexAndMapping();
+
+        client().prepareIndex(INDEX, TYPE, "1").setSource(jsonBuilder()
+                .startObject().startArray(FIELD)
+                .value("The Prodigy Firestarter").value("Firestarter")
+                .endArray().endObject()
+        ).get();
+
+        refresh();
+
+        String suggestionName = RandomStrings.randomAsciiOfLength(new Random(), 10);
+        SuggestResponse suggestResponse = client().prepareSuggest(INDEX).addSuggestion(
+                new CompletionSuggestionBuilder(suggestionName).field(FIELD).text("the p").size(10).highlight(true)
+        ).execute().actionGet();
+
+        assertNoFailures(suggestResponse);
+        assertThat(suggestResponse.getSuggest().getSuggestion(suggestionName), is(notNullValue()));
+        Suggest.Suggestion<Suggest.Suggestion.Entry<Suggest.Suggestion.Entry.Option>> suggestion = suggestResponse.getSuggest().getSuggestion(suggestionName);
+
+        //List<String> suggestionList = getNames(suggestion.getEntries().get(0));
+        List<Suggest.Suggestion.Entry.Option> options = suggestion.getEntries().get(0).getOptions();
+        assertThat(options.size(), is(1));
+        String highlightedText = options.get(0).getHighlighted().string();
+        assertThat(highlightedText, is("<b>The P</b>rodigy Firestarter"));
+    }
+
+    @Test
     public void testThatDisablingPositionIncrementsWorkForStopwords() throws Exception {
         // analyzer which removes stopwords... so may not be the simple one
         createIndexAndMapping("standard", "standard", false, false, false);

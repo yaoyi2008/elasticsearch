@@ -18,8 +18,6 @@
  */
 package org.elasticsearch.search.suggest.completion;
 
-import org.apache.lucene.search.suggest.analyzing.XFuzzySuggester;
-import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.search.suggest.SuggestBuilder;
 
@@ -30,12 +28,26 @@ import java.io.IOException;
  */
 public class CompletionSuggestionBuilder extends SuggestBuilder.SuggestionBuilder<CompletionSuggestionBuilder> {
 
+    private boolean highlight;
+
     public CompletionSuggestionBuilder(String name) {
         super(name, "completion");
     }
 
     @Override
     protected XContentBuilder innerToXContent(XContentBuilder builder, Params params) throws IOException {
+        if (highlight) {
+            builder.field("highlight", highlight);
+        }
         return builder;
+    }
+
+    public CompletionSuggestionBuilder highlight(boolean highlight) {
+        this.highlight = highlight;
+        return this;
+    }
+
+    public boolean isHighlight() {
+        return highlight;
     }
 }

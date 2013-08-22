@@ -533,6 +533,10 @@ public class Suggest implements Iterable<Suggest.Suggestion<? extends Entry<? ex
                     return highlighted;
                 }
 
+                public void setHighlighted(Text highlighted) {
+                    this.highlighted = highlighted;
+                }
+
                 /**
                  * @return The score based on the edit distance difference between the suggested term and the
                  *         term in the suggest text.

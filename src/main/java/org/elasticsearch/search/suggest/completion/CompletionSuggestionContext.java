@@ -34,6 +34,7 @@ public class CompletionSuggestionContext extends SuggestionSearchContext.Suggest
     private int fuzzyMinLength = XFuzzySuggester.DEFAULT_MIN_FUZZY_LENGTH;
     private int fuzzyPrefixLength = XFuzzySuggester.DEFAULT_NON_FUZZY_PREFIX;
     private boolean fuzzy = false;
+    private boolean highlight = false;
 
     public CompletionSuggestionContext(Suggester suggester) {
         super(suggester);
@@ -85,5 +86,13 @@ public class CompletionSuggestionContext extends SuggestionSearchContext.Suggest
 
     public boolean isFuzzy() {
         return fuzzy;
+    }
+
+    public boolean isHighlight() {
+        return highlight;
+    }
+
+    public void setHighlight(boolean highlight) {
+        this.highlight = highlight;
     }
 }

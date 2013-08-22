@@ -69,7 +69,7 @@ public class CompletionSuggestion extends Suggest.Suggestion<CompletionSuggestio
         public static class Option extends org.elasticsearch.search.suggest.Suggest.Suggestion.Entry.Option {
             private BytesReference payload;
 
-            public Option(Text text, float score,BytesReference payload) {
+            public Option(Text text, float score, BytesReference payload) {
                 super(text, score);
                 this.payload = payload;
             }

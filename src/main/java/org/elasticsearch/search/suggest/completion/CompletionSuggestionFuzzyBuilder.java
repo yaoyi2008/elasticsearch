@@ -38,6 +38,7 @@ public class CompletionSuggestionFuzzyBuilder extends SuggestBuilder.SuggestionB
     private boolean fuzzyTranspositions = XFuzzySuggester.DEFAULT_TRANSPOSITIONS;
     private int fuzzyMinLength = XFuzzySuggester.DEFAULT_MIN_FUZZY_LENGTH;
     private int fuzzyPrefixLength = XFuzzySuggester.DEFAULT_NON_FUZZY_PREFIX;
+    private boolean highlight;
 
     public int getFuzzyEditDistance() {
         return fuzzyEditDistance;
@@ -75,6 +76,15 @@ public class CompletionSuggestionFuzzyBuilder extends SuggestBuilder.SuggestionB
         return this;
     }
 
+    public CompletionSuggestionFuzzyBuilder highlight(boolean highlight) {
+        this.highlight = highlight;
+        return this;
+    }
+
+    public boolean isHighlight() {
+        return highlight;
+    }
+
     @Override
     protected XContentBuilder innerToXContent(XContentBuilder builder, ToXContent.Params params) throws IOException {
         builder.startObject("fuzzy");
@@ -90,6 +100,9 @@ public class CompletionSuggestionFuzzyBuilder extends SuggestBuilder.SuggestionB
         }
         if (fuzzyPrefixLength != XFuzzySuggester.DEFAULT_NON_FUZZY_PREFIX) {
             builder.field("prefix_length", fuzzyPrefixLength);
+        }
+        if (highlight) {
+            builder.field("highlight", highlight);
         }
 
         builder.endObject();

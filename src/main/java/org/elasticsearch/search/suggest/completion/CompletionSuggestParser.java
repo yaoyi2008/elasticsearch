@@ -49,7 +49,9 @@ public class CompletionSuggestParser implements SuggestContextParser {
                 fieldName = parser.currentName();
             } else if (token.isValue()) {
                 if (!parseSuggestContext(parser, mapperService, fieldName, suggestion))  {
-                    if (token == XContentParser.Token.VALUE_BOOLEAN && "fuzzy".equals(fieldName)) {
+                    if (token == XContentParser.Token.VALUE_BOOLEAN && "highlight".equals(fieldName)) {
+                        suggestion.setHighlight(parser.booleanValue());
+                    } else if (token == XContentParser.Token.VALUE_BOOLEAN && "fuzzy".equals(fieldName)) {
                         suggestion.setFuzzy(parser.booleanValue());
                     }
                 }

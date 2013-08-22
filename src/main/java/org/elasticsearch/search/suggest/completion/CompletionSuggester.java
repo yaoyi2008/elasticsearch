@@ -73,8 +73,7 @@ public class CompletionSuggester extends Suggester<CompletionSuggestionContext> 
                     final float score = res.value;
                     final Option value = results.get(key);
                     if (value == null) {
-                        final Option option = new CompletionSuggestion.Entry.Option(new StringText(key), score, res.payload == null ? null
-                                : new BytesArray(res.payload));
+                        final Option option = new CompletionSuggestion.Entry.Option(new StringText(key), score, res.payload == null ? null : new BytesArray(res.payload));
                         results.put(key, option);
                     } else if (value.getScore() < score) {
                         value.setScore(score);
@@ -88,6 +87,11 @@ public class CompletionSuggester extends Suggester<CompletionSuggestionContext> 
 
         int optionCount = Math.min(suggestionContext.getSize(), options.size());
         for (int i = 0 ; i < optionCount ; i++) {
+            if (suggestionContext.isHighlight()) {
+                CompletionSuggestHighlighter highlighter = new CompletionSuggestHighlighter(suggestionContext.mapper().searchAnalyzer());
+                String highlightedString = highlighter.highlight(spare.toString(), options.get(i).getText().string(), "<b>", "</b>");
+                options.get(i).setHighlighted(new StringText(highlightedString));
+            }
             completionSuggestEntry.addOption(options.get(i));
         }
 
