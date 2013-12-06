@@ -16,8 +16,10 @@ ES_HOME=/usr/share/elasticsearch
 # Maximum number of open files
 MAX_OPEN_FILES=65535
 
-# Maximum amount of locked memory
-#MAX_LOCKED_MEMORY=
+# Maximum locked memory size. Set to "unlimited" if you use the
+# bootstrap.mlockall option in elasticsearch.yml. You must also set
+# ES_HEAP_SIZE.
+#MAX_LOCKED_MEMORY=unlimited
 
 # ElasticSearch log directory
 LOG_DIR=/var/log/elasticsearch
@@ -36,8 +38,8 @@ CONF_FILE=/etc/elasticsearch/elasticsearch.yml
 
 # User to run as, change this to a specific elasticsearch user if possible
 # Also make sure, this user can write into the log directories in case you change them
-# This setting only works for the init script, but has to be configured separately for systemd startup
 ES_USER=elasticsearch
+ES_GROUP=elasticsearch
 
 # Configure restart on package upgrade (true, every other setting will lead to not restarting)
 #RESTART_ON_UPGRADE=true
