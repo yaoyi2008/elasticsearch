@@ -18,6 +18,7 @@
  */
 package org.elasticsearch.search.aggregations.bucket;
 
+import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -28,6 +29,7 @@ import org.elasticsearch.search.aggregations.bucket.significant.SignificantTerms
 import org.elasticsearch.search.aggregations.bucket.significant.SignificantTerms.Bucket;
 import org.elasticsearch.search.aggregations.bucket.significant.SignificantTermsBuilder;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.elasticsearch.test.junit.annotations.TestLogging;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +37,9 @@ import java.util.HashMap;
 
 import static org.elasticsearch.cluster.metadata.IndexMetaData.SETTING_NUMBER_OF_REPLICAS;
 import static org.elasticsearch.cluster.metadata.IndexMetaData.SETTING_NUMBER_OF_SHARDS;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertAcked;
+import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertNoFailures;
 import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertSearchResponse;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -153,6 +157,30 @@ public class SignificantTermsTests extends ElasticsearchIntegrationTest {
         assertSearchResponse(response);
         SignificantTerms topTerms = response.getAggregations().get("mySignificantTerms");
         checkExpectedStringTermsFound(topTerms);
+    }
+
+    @Test
+    @TestLogging("_root:DEBUG")
+    public void testNoNpeHappensIfNotAllShardsHaveDoHaveACertainField() throws Exception {
+        assertAcked(prepareCreate("my-test").setSettings(SETTING_NUMBER_OF_SHARDS, 5, SETTING_NUMBER_OF_REPLICAS, 0));
+        client().prepareIndex("my-test", "test").setRouting("1").setSource(jsonBuilder().startObject().field("foo", "bar").endObject()).get();
+        client().prepareIndex("my-test", "test").setRouting("1").setSource(jsonBuilder().startObject().field("foo", "bar").endObject()).get();
+        client().prepareIndex("my-test", "test").setRouting("1").setSource(jsonBuilder().startObject().field("foo", "this is a test").endObject()).get();
+        client().prepareIndex("my-test", "test").setRouting("1").setSource(jsonBuilder().startObject().field("foo", "isnt this a test").endObject()).get();
+        client().prepareIndex("my-test", "test").setRouting("1").setSource(jsonBuilder().startObject().field("foo", "wonderful integration test").endObject()).get();
+        client().prepareIndex("my-test", "test").setRouting("1").setSource(jsonBuilder().startObject().field("foo", "no unit test").endObject()).get();
+        client().prepareIndex("my-test", "test").setRouting("1").setSource(jsonBuilder().startObject().field("foo", "testacular").endObject()).get();
+        client().prepareIndex("my-test", "test").setRouting("1").setSource(jsonBuilder().startObject().field("foo", "testosteron").endObject()).get();
+        client().prepareIndex("my-test", "test").setRouting("1").setSource(jsonBuilder().startObject().field("foo", "tests are awesome").endObject()).get();
+        client().prepareIndex("my-test", "test", "2").setRouting("3").setSource(jsonBuilder().startObject().field("foo", "baz").endObject()).get();
+        client().prepareIndex("my-test", "test", "3").setRouting("3").setSource(jsonBuilder().startObject().field("foo", "baz").endObject()).get();
+        client().prepareIndex("my-test", "test", "3").setRouting("3").setSource(jsonBuilder().startObject().field("notfoo", "baz").endObject()).get();
+        client().prepareIndex("my-test", "test", "4").setRouting("4").setSource(jsonBuilder().startObject().field("notfoo", BytesRef.EMPTY_BYTES).endObject()).get();
+        client().prepareIndex("my-test", "test", "5").setRouting("4").setSource(jsonBuilder().startObject().field("notfoo", "bar").endObject()).get();
+        refresh();
+
+        SearchResponse searchResponse = client().prepareSearch("my-test").addAggregation(new SignificantTermsBuilder("mySignificantTerms").field("foo").minDocCount(1)).get();
+        assertNoFailures(searchResponse);
     }
 
 
