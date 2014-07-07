@@ -1,0 +1,97 @@
+---
+setup:
+
+  - do:
+      indices.create:
+        index: test_index
+        body:
+          aliases:
+            test_alias: {}
+            test_blias: {}
+          mappings:
+            type_1: {}
+          warmers:
+            test_warmer:
+              source:
+                query:
+                  match_all: {}
+          settings:
+            number_of_shards:   1
+            number_of_replicas: 1
+
+  - do:
+      indices.create:
+        index: test_index_2
+        body:
+          settings:
+            number_of_shards:   1
+            number_of_replicas: 2
+          aliases:
+            test_alias: {}
+            test_blias: {}
+
+---
+"Get index infos":
+
+  - do:
+      indices.get:
+        index: test_index
+
+  - is_true: test_index.aliases
+  - is_true: test_index.settings
+  - is_true: test_index.warmers
+  - is_true: test_index.mappings
+
+---
+"Get index infos for mappings only":
+
+  - do:
+      indices.get:
+        index: test_index
+        feature: _mappings
+
+  - is_true: test_index.mappings
+  - is_false: test_index.aliases
+  - is_false: test_index.settings
+  - is_false: test_index.warmers
+
+---
+"Get index infos for mappings and warmers only":
+
+  - do:
+      indices.get:
+        index: test_index
+        feature: _mappings,_warmers
+
+  - is_true: test_index.mappings
+  - is_true: test_index.warmers
+  - is_false: test_index.aliases
+  - is_false: test_index.settings
+
+---
+"Get index infos should work on aliases":
+
+  - do:
+      indices.get:
+        index: test_blias
+        feature: _mappings,_warmers
+
+  - is_true: test_index.mappings
+  - is_true: test_index.warmers
+  - is_false: test_index.aliases
+  - is_false: test_index.settings
+
+---
+"Get index infos should work for wildcards":
+
+  - do:
+      indices.get:
+        index: test_*
+        feature: _mappings,_settings
+  
+  - is_true: test_index.mappings
+  - is_true: test_index.settings
+  - is_true: test_index_2.settings
+  - is_false: test_index.aliases
+  - is_false: test_index.warmers
+

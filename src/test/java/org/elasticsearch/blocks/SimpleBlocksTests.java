@@ -30,6 +30,7 @@ import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.cluster.metadata.MetaData;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.elasticsearch.test.junit.annotations.TestLogging;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -41,6 +42,7 @@ import static org.hamcrest.Matchers.notNullValue;
 public class SimpleBlocksTests extends ElasticsearchIntegrationTest {
     
     @Test
+    @TestLogging("_root:DEBUG")
     public void verifyIndexAndClusterReadOnly() throws Exception {
         // cluster.read_only = null: write and metadata not blocked
         canCreateIndex("test1");

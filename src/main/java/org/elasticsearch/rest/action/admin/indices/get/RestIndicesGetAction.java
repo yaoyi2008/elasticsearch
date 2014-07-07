@@ -1,11 +1,11 @@
 /*
- * Licensed to ElasticSearch and Shay Banon under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership. ElasticSearch licenses this
- * file to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to Elasticsearch under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -33,6 +33,7 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentBuilderString;
+import org.elasticsearch.index.mapper.ParsedDocument;
 import org.elasticsearch.rest.*;
 import org.elasticsearch.rest.action.support.RestResponseListener;
 import org.elasticsearch.search.warmer.IndexWarmersMetaData;
@@ -52,17 +53,26 @@ public class RestIndicesGetAction extends BaseRestHandler {
     public RestIndicesGetAction(Settings settings, Client client, RestController controller) {
         super(settings, client);
         controller.registerHandler(GET, "/{index}", this);
-        controller.registerHandler(GET, "/{index}/{feature}", this);
+        controller.registerHandler(GET, "/{index}/{type}", this);
+        // FIXME
+        // need hard to overwrite this one, otherwise that URL is not found
+        // I think there are get handlers overwriting each other, need to investigate
+        controller.registerHandler(GET, "/{index}/_mappings", this);
     }
 
     @Override
     public void handleRequest(final RestRequest request, final RestChannel channel, final Client client) {
         final String[] indexes = Strings.splitStringByCommaToArray(request.param("index"));
-        final Set<String> features = Strings.splitStringByCommaToSet(request.param("feature"));
+        final Set<String> features = request.hasParam("type") ? Strings.splitStringByCommaToSet(request.param("type")) : new HashSet<String>(); // TODO MAKE ME Collections.EMPTY_SET after fixing the rest
+        // FIXME (as in remove)
+        if (request.uri().contains("/_mappings")) {
+            features.add("_mappings");
+        }
         final boolean isFeatureSelected = features.size() > 0;
 
         ClusterStateRequest clusterStateRequest = new ClusterStateRequest();
         clusterStateRequest.indices(indexes);
+        clusterStateRequest.local(request.paramAsBoolean("local", clusterStateRequest.local()));
         clusterStateRequest.listenerThreaded(false);
 
         client.admin().cluster().state(clusterStateRequest, new RestResponseListener<ClusterStateResponse>(channel) {
@@ -79,19 +89,21 @@ public class RestIndicesGetAction extends BaseRestHandler {
                 XContentBuilder builder = channel.newBuilder();
                 builder.startObject();
 
-                // aliases, mapping, settings, warmer
                 ImmutableOpenMap<String, IndexMetaData> indexMetaDataMap = response.getState().metaData().indices();
                 ImmutableOpenMap<String, ImmutableList<IndexWarmersMetaData.Entry>> warmers = response.getState().metaData().findWarmers(indexes, Strings.EMPTY_ARRAY, Strings.EMPTY_ARRAY);
 
                 for (ObjectObjectCursor<String, IndexMetaData> cursor : indexMetaDataMap) {
+                    String indexName = cursor.key;
                     IndexMetaData indexMetaData = cursor.value;
+
+                    builder.startObject(indexName);
 
                     writeSettings(builder, indexMetaData.settings());
                     writeMappings(builder, indexMetaData.mappings());
                     writeAliases(builder, indexMetaData.aliases(), request);
-
-                    String indexName = cursor.key;
                     writeWarmer(builder, warmers.get(indexName), request);
+
+                    builder.endObject();
                 }
 
                 builder.endObject();

@@ -26,6 +26,7 @@ import org.elasticsearch.Version;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
 import org.elasticsearch.test.ElasticsearchIntegrationTest.ClusterScope;
+import org.elasticsearch.test.junit.annotations.TestLogging;
 import org.elasticsearch.test.rest.client.RestException;
 import org.elasticsearch.test.rest.parser.RestTestParseException;
 import org.elasticsearch.test.rest.parser.RestTestSuiteParser;
@@ -209,6 +210,7 @@ public class ElasticsearchRestTests extends ElasticsearchIntegrationTest {
         return compatibilityVersion().onOrAfter(Version.V_1_2_0);
     }
 
+    @TestLogging("_root:INFO,test.rest.client:TRACE")
     @Test
     public void test() throws IOException {
         //let's check that there is something to run, otherwise there might be a problem with the test section
