@@ -23,6 +23,7 @@ import com.carrotsearch.hppc.cursors.ObjectObjectCursor;
 import com.google.common.collect.ImmutableList;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateRequest;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
+import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
@@ -70,7 +71,7 @@ public class RestIndicesGetAction extends BaseRestHandler {
         }
         final boolean isFeatureSelected = features.size() > 0;
 
-        ClusterStateRequest clusterStateRequest = new ClusterStateRequest();
+        final ClusterStateRequest clusterStateRequest = new ClusterStateRequest();
         clusterStateRequest.indices(indexes);
         clusterStateRequest.local(request.paramAsBoolean("local", clusterStateRequest.local()));
         clusterStateRequest.listenerThreaded(false);
@@ -79,18 +80,12 @@ public class RestIndicesGetAction extends BaseRestHandler {
 
             @Override
             public RestResponse buildResponse(ClusterStateResponse response) throws Exception {
-                if (response.getState().metaData().indices().size() != indexes.length) {
-                    Collection<String> foundIndices = Arrays.asList(response.getState().metaData().indices().keys().toArray(String.class));
-                    Collection<String> expectedIndices = Arrays.asList(indexes);
-                    String msg = String.format(Locale.ROOT, "Expected indices [%s], found [%s]", expectedIndices, foundIndices);
-                    return new BytesRestResponse(OK, msg);
-                }
-
                 XContentBuilder builder = channel.newBuilder();
                 builder.startObject();
 
                 ImmutableOpenMap<String, IndexMetaData> indexMetaDataMap = response.getState().metaData().indices();
-                ImmutableOpenMap<String, ImmutableList<IndexWarmersMetaData.Entry>> warmers = response.getState().metaData().findWarmers(indexes, Strings.EMPTY_ARRAY, Strings.EMPTY_ARRAY);
+                String[] concreteIndices = response.getState().metaData().concreteIndices(IndicesOptions.fromOptions(true, true, true, false), indexes);
+                ImmutableOpenMap<String, ImmutableList<IndexWarmersMetaData.Entry>> warmers = response.getState().metaData().findWarmers(concreteIndices, Strings.EMPTY_ARRAY, Strings.EMPTY_ARRAY);
 
                 for (ObjectObjectCursor<String, IndexMetaData> cursor : indexMetaDataMap) {
                     String indexName = cursor.key;

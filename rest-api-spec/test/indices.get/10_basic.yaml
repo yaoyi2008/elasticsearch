@@ -30,6 +30,26 @@ setup:
             test_alias: {}
             test_blias: {}
 
+  - do:
+      indices.create:
+        index: test_index_3
+        body:
+          aliases:
+            test_alias: {}
+            test_blias: {}
+
+  - do:
+      cluster.health:
+        wait_for_status: yellow
+
+  - do:
+      indices.close:
+        index: test_index_3
+
+  - do:
+      cluster.health:
+        wait_for_status: yellow
+
 ---
 "Get index infos":
 
