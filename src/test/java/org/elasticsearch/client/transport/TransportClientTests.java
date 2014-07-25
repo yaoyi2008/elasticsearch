@@ -36,7 +36,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.startsWith;
 
-@ClusterScope(scope = Scope.TEST, numDataNodes = 0, transportClientRatio = 1.0)
+@ClusterScope(scope = Scope.TEST, numDataNodes = 0)
 public class TransportClientTests extends ElasticsearchIntegrationTest {
 
     @Test
@@ -45,7 +45,6 @@ public class TransportClientTests extends ElasticsearchIntegrationTest {
 
         TransportClient client = (TransportClient) internalCluster().client(nodeName);
         assertThat(client.connectedNodes().get(0).dataNode(), equalTo(false));
-
     }
 
     @Test
