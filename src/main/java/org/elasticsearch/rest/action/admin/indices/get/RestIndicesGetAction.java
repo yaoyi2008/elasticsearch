@@ -58,17 +58,18 @@ public class RestIndicesGetAction extends BaseRestHandler {
         // FIXME
         // need hard to overwrite this one, otherwise that URL is not found
         // I think there are get handlers overwriting each other, need to investigate
-        controller.registerHandler(GET, "/{index}/_mappings", this);
+        //controller.registerHandler(GET, "/{index}/_mappings", this);
     }
 
     @Override
     public void handleRequest(final RestRequest request, final RestChannel channel, final Client client) {
         final String[] indexes = Strings.splitStringByCommaToArray(request.param("index"));
         final Set<String> features = request.hasParam("type") ? Strings.splitStringByCommaToSet(request.param("type")) : new HashSet<String>(); // TODO MAKE ME Collections.EMPTY_SET after fixing the rest
-        // FIXME (as in remove)
-        if (request.uri().contains("/_mappings")) {
-            features.add("_mappings");
-        }
+        //// FIXME (as in remove)
+        // Collides with RestGetMappingAction
+        //if (request.uri().contains("/_mappings")) {
+        //    features.add("_mappings");
+        //}
         final boolean isFeatureSelected = features.size() > 0;
 
         final ClusterStateRequest clusterStateRequest = new ClusterStateRequest();
