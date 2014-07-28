@@ -19,6 +19,8 @@
 
 package org.elasticsearch.client.transport;
 
+import com.google.common.base.Functions;
+import com.google.common.collect.Iterables;
 import org.elasticsearch.Version;
 import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -32,24 +34,24 @@ import org.elasticsearch.transport.TransportService;
 import org.junit.Test;
 
 import static org.elasticsearch.test.ElasticsearchIntegrationTest.Scope;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.*;
 
 @ClusterScope(scope = Scope.TEST, numDataNodes = 0)
 public class TransportClientTests extends ElasticsearchIntegrationTest {
 
     @Test
     public void testPickingUpChangesInDiscoveryNode() {
-        String nodeName = internalCluster().startNode(ImmutableSettings.builder().put("node.data", false));
+        String nodeName = internalCluster().startNode();
 
-        TransportClient client = (TransportClient) internalCluster().client(nodeName);
-        assertThat(client.connectedNodes().get(0).dataNode(), equalTo(false));
+        TransportClient client = (TransportClient) internalCluster().transportClient();
+        assertThat(client.connectedNodes().size(), is(2));
+        Iterable<String> nodeNames = Iterables.transform(client.connectedNodes(), Functions.toStringFunction());
+        assertThat(nodeNames, hasItem(containsString(nodeName)));
     }
 
     @Test
     public void testNodeVersionIsUpdated() {
-        TransportClient client = (TransportClient)  internalCluster().client();
+        TransportClient client = (TransportClient)  internalCluster().transportClient();
         TransportClientNodesService nodeService = client.nodeService();
         Node node = NodeBuilder.nodeBuilder().data(false).settings(ImmutableSettings.builder()
                 .put(internalCluster().getDefaultSettings())

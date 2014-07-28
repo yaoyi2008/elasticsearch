@@ -173,7 +173,8 @@ final class ExternalNode implements Closeable {
             TransportAddress addr = nodeInfo.getTransport().getAddress().publishAddress();
             TransportClient client = new TransportClient(settingsBuilder().put("client.transport.nodes_sampler_interval", "1s")
                     .put("name", "transport_client_" + nodeInfo.getNode().name())
-                    .put(ClusterName.SETTING, clusterName).put("client.transport.sniff", random.nextBoolean()).build());
+                    // FIXME BACK TO random.nextBoolean()
+                    .put(ClusterName.SETTING, clusterName).put("client.transport.sniff", true).build());
             client.addTransportAddress(addr);
             this.client = client;
         }
