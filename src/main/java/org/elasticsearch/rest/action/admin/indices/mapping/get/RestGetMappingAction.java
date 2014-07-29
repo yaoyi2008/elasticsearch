@@ -49,7 +49,6 @@ public class RestGetMappingAction extends BaseRestHandler {
     public RestGetMappingAction(Settings settings, Client client, RestController controller) {
         super(settings, client);
         controller.registerHandler(GET, "/_mapping", this);
-        controller.registerHandler(GET, "/{index}/_mapping", this);
         controller.registerHandler(GET, "/{index}/{type}/_mapping", this);
         controller.registerHandler(GET, "/{index}/_mappings/{type}", this);
         controller.registerHandler(GET, "/{index}/_mapping/{type}", this);

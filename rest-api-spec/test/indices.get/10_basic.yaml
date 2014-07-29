@@ -68,7 +68,7 @@ setup:
   - do:
       indices.get:
         index: test_index
-        feature: _mappings
+        feature: _mapping
 
   - is_true: test_index.mappings
   - is_false: test_index.aliases
@@ -81,7 +81,7 @@ setup:
   - do:
       indices.get:
         index: test_index
-        feature: _mappings,_warmers
+        feature: _mapping,_warmer
 
   - is_true: test_index.mappings
   - is_true: test_index.warmers
@@ -94,7 +94,7 @@ setup:
   - do:
       indices.get:
         index: test_blias
-        feature: _mappings,_warmers
+        feature: _mapping,_warmers
 
   - is_true: test_index.mappings
   - is_true: test_index.warmers
@@ -107,7 +107,7 @@ setup:
   - do:
       indices.get:
         index: test_*
-        feature: _mappings,_settings
+        feature: _mapping,_settings
   
   - is_true: test_index.mappings
   - is_true: test_index.settings

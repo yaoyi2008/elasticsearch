@@ -55,6 +55,11 @@ public class RestIndicesGetAction extends BaseRestHandler {
         super(settings, client);
         controller.registerHandler(GET, "/{index}", this);
         controller.registerHandler(GET, "/{index}/{type}", this);
+        controller.registerHandler(GET, "/{index}/_settings", this);
+        controller.registerHandler(GET, "/{index}/_mapping", this);
+        controller.registerHandler(GET, "/{index}/_mappings", this);
+        controller.registerHandler(GET, "/{index}/_warmer", this);
+        controller.registerHandler(GET, "/{index}/_aliases", this);
         // FIXME
         // need hard to overwrite this one, otherwise that URL is not found
         // I think there are get handlers overwriting each other, need to investigate
@@ -107,7 +112,7 @@ public class RestIndicesGetAction extends BaseRestHandler {
             }
 
             private void writeWarmer(XContentBuilder builder, ImmutableList<IndexWarmersMetaData.Entry> entries, RestRequest request) throws IOException {
-                if (isFeatureSelected && !features.contains("_warmers")) {
+                if (isFeatureSelected && !features.contains("_warmer")) {
                     return;
                 }
                 if (entries != null && entries.size() > 0) {
@@ -131,7 +136,7 @@ public class RestIndicesGetAction extends BaseRestHandler {
             }
 
             private void writeMappings(XContentBuilder builder, ImmutableOpenMap<String, MappingMetaData> mappings) throws IOException {
-                if (isFeatureSelected && !features.contains("_mappings")) {
+                if (isFeatureSelected && !features.contains("_mapping")) {
                     return;
                 }
                 if (mappings.size() > 0) {

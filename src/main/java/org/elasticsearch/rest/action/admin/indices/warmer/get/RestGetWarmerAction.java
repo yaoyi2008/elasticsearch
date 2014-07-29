@@ -45,7 +45,6 @@ public class RestGetWarmerAction extends BaseRestHandler {
         super(settings, client);
         controller.registerHandler(GET, "/_warmer", this);
         controller.registerHandler(GET, "/_warmer/{name}", this);
-        controller.registerHandler(GET, "/{index}/_warmer", this);
         controller.registerHandler(GET, "/{index}/_warmer/{name}", this);
         controller.registerHandler(GET, "/{index}/_warmers/{name}", this);
         controller.registerHandler(GET, "/{index}/{type}/_warmer/{name}", this);

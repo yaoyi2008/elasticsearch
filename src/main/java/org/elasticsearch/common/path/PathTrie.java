@@ -165,7 +165,12 @@ public class PathTrie<T> {
                 }
                 usedWildcard = true;
             } else {
-                usedWildcard = token.equals(wildcard);
+                if (index+1 == path.length && children.get(wildcard) != null) {
+                    usedWildcard = true;
+                } else {
+                    usedWildcard = token.equals(wildcard);
+                }
+
             }
 
             put(params, node, token);

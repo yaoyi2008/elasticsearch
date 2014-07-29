@@ -48,7 +48,6 @@ public class RestGetIndicesAliasesAction extends BaseRestHandler {
     public RestGetIndicesAliasesAction(Settings settings, Client client, RestController controller) {
         super(settings, client);
         controller.registerHandler(GET, "/_aliases", this);
-        controller.registerHandler(GET, "/{index}/_aliases", this);
         controller.registerHandler(GET, "/{index}/_aliases/{name}", this);
         controller.registerHandler(GET, "/_aliases/{name}", this);
     }

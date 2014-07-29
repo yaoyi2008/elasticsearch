@@ -157,4 +157,19 @@ public class PathTrieTests extends ElasticsearchTestCase {
         assertThat(trie.retrieve("a/*/_endpoint", params), equalTo("test5"));
         assertThat(params.get("test"), equalTo("*"));
     }
+
+    @Test
+    public void testThatUnderscoreCanBePartOfVariables() {
+        PathTrie<String> trie = new PathTrie<>();
+        trie.insert("/{type}", "test2");
+        trie.insert("/_mapping/{foo}", "test4");
+
+        Map<String, String> params = newHashMap();
+        assertThat(trie.retrieve("/_mapping", params), equalTo("test2"));
+        assertThat(params.get("type"), equalTo("_mapping"));
+
+//        params = newHashMap();
+//        assertThat(trie.retrieve("/_mapping,_foo", params), equalTo("test2"));
+//        assertThat(params.get("foo"), equalTo("_mapping,_foo"));
+    }
 }
