@@ -624,6 +624,8 @@
                         </goals>
                         <configuration>
                             <includes>
+                                <include>org/elasticsearch/**/*Tests.java</include>
+                                <include>org/elasticsearch/**/*Test.java</include>
                                 <include>org/elasticsearch/test/**/*</include>
                                 <include>org/apache/lucene/util/AbstractRandomizedTest.java</include>
                             </includes>
@@ -631,8 +633,7 @@
                                 <!-- unit tests for yaml suite parser & rest spec parser need to be excluded -->
                                 <exclude>org/elasticsearch/test/rest/test/**/*</exclude>
                             </excludes>
-                            <!-- Resources are large and not really helpful as "test sources". -->
-                            <excludeResources>true</excludeResources>
+                            <excludeResources>false</excludeResources>
                         </configuration>
                     </execution>
                 </executions>
@@ -643,91 +644,194 @@
                 <version>2.3</version>
                 <executions>
                     <execution>
+                        <id>standard</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadeTestJar>true</shadeTestJar>
+                            <minimizeJar>true</minimizeJar>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.google.guava:guava</include>
+                                    <include>com.carrotsearch:hppc</include>
+                                    <include>com.fasterxml.jackson.core:jackson-core</include>
+                                    <include>com.fasterxml.jackson.dataformat:jackson-dataformat-smile</include>
+                                    <include>com.fasterxml.jackson.dataformat:jackson-dataformat-yaml</include>
+                                    <include>com.fasterxml.jackson.dataformat:jackson-dataformat-cbor</include>
+                                    <include>joda-time:joda-time</include>
+                                    <include>org.joda:joda-convert</include>
+                                    <include>io.netty:netty</include>
+                                    <include>com.ning:compress-lzf</include>
+                                    <include>com.github.spullara.mustache.java:compiler</include>
+                                    <include>com.tdunning:t-digest</include>
+                                </includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.common</pattern>
+                                    <shadedPattern>org.elasticsearch.common</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.carrotsearch.hppc</pattern>
+                                    <shadedPattern>org.elasticsearch.common.hppc</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>jsr166e</pattern>
+                                    <shadedPattern>org.elasticsearch.common.util.concurrent.jsr166e</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml.jackson</pattern>
+                                    <shadedPattern>org.elasticsearch.common.jackson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.joda</pattern>
+                                    <shadedPattern>org.elasticsearch.common.joda</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.jboss.netty</pattern>
+                                    <shadedPattern>org.elasticsearch.common.netty</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.ning.compress</pattern>
+                                    <shadedPattern>org.elasticsearch.common.compress</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.github.mustachejava</pattern>
+                                    <shadedPattern>org.elasticsearch.common.mustache</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.tdunning.math.stats</pattern>
+                                    <shadedPattern>org.elasticsearch.common.stats</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/license/**</exclude>
+                                        <exclude>META-INF/*</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>LICENSE</exclude>
+                                        <exclude>NOTICE</exclude>
+                                        <exclude>/*.txt</exclude>
+                                        <exclude>build.properties</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>io.netty:netty</artifact>
+                                    <includes>
+                                        <include>org/jboss/netty/**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>com.google.guava:guava</artifact>
+                                    <includes>
+                                        <include>com/google/common/**</include>
+                                    </includes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>alltests</id>
+                        <configuration>
+                            <finalName>elasticsearch-alltests-2.0.0-SNAPSHOT</finalName>
+                            <shadeTestJar>true</shadeTestJar>
+                            <minimizeJar>true</minimizeJar>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                            <shadeTestJar>true</shadeTestJar>
+                            <minimizeJar>true</minimizeJar>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.google.guava:guava</include>
+                                    <include>com.carrotsearch:hppc</include>
+                                    <include>com.fasterxml.jackson.core:jackson-core</include>
+                                    <include>com.fasterxml.jackson.dataformat:jackson-dataformat-smile</include>
+                                    <include>com.fasterxml.jackson.dataformat:jackson-dataformat-yaml</include>
+                                    <include>com.fasterxml.jackson.dataformat:jackson-dataformat-cbor</include>
+                                    <include>joda-time:joda-time</include>
+                                    <include>org.joda:joda-convert</include>
+                                    <include>io.netty:netty</include>
+                                    <include>com.ning:compress-lzf</include>
+                                    <include>com.github.spullara.mustache.java:compiler</include>
+                                    <include>com.tdunning:t-digest</include>
+                                </includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.common</pattern>
+                                    <shadedPattern>org.elasticsearch.common</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.carrotsearch.hppc</pattern>
+                                    <shadedPattern>org.elasticsearch.common.hppc</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>jsr166e</pattern>
+                                    <shadedPattern>org.elasticsearch.common.util.concurrent.jsr166e</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml.jackson</pattern>
+                                    <shadedPattern>org.elasticsearch.common.jackson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.joda</pattern>
+                                    <shadedPattern>org.elasticsearch.common.joda</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.jboss.netty</pattern>
+                                    <shadedPattern>org.elasticsearch.common.netty</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.ning.compress</pattern>
+                                    <shadedPattern>org.elasticsearch.common.compress</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.github.mustachejava</pattern>
+                                    <shadedPattern>org.elasticsearch.common.mustache</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.tdunning.math.stats</pattern>
+                                    <shadedPattern>org.elasticsearch.common.stats</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/license/**</exclude>
+                                        <exclude>META-INF/*</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>LICENSE</exclude>
+                                        <exclude>NOTICE</exclude>
+                                        <exclude>/*.txt</exclude>
+                                        <exclude>build.properties</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>io.netty:netty</artifact>
+                                    <includes>
+                                        <include>org/jboss/netty/**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>com.google.guava:guava</artifact>
+                                    <includes>
+                                        <include>com/google/common/**</include>
+                                    </includes>
+                                </filter>
+                            </filters>
+                        </configuration>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <shadeTestJar>true</shadeTestJar>
-                    <minimizeJar>true</minimizeJar>
-                    <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-                    <artifactSet>
-                        <includes>
-                            <include>com.google.guava:guava</include>
-                            <include>com.carrotsearch:hppc</include>
-                            <include>com.fasterxml.jackson.core:jackson-core</include>
-                            <include>com.fasterxml.jackson.dataformat:jackson-dataformat-smile</include>
-                            <include>com.fasterxml.jackson.dataformat:jackson-dataformat-yaml</include>
-                            <include>com.fasterxml.jackson.dataformat:jackson-dataformat-cbor</include>
-                            <include>joda-time:joda-time</include>
-                            <include>org.joda:joda-convert</include>
-                            <include>io.netty:netty</include>
-                            <include>com.ning:compress-lzf</include>
-                            <include>com.github.spullara.mustache.java:compiler</include>
-                            <include>com.tdunning:t-digest</include>
-                        </includes>
-                    </artifactSet>
-                    <relocations>
-                        <relocation>
-                            <pattern>com.google.common</pattern>
-                            <shadedPattern>org.elasticsearch.common</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>com.carrotsearch.hppc</pattern>
-                            <shadedPattern>org.elasticsearch.common.hppc</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>jsr166e</pattern>
-                            <shadedPattern>org.elasticsearch.common.util.concurrent.jsr166e</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>com.fasterxml.jackson</pattern>
-                            <shadedPattern>org.elasticsearch.common.jackson</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>org.joda</pattern>
-                            <shadedPattern>org.elasticsearch.common.joda</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>org.jboss.netty</pattern>
-                            <shadedPattern>org.elasticsearch.common.netty</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>com.ning.compress</pattern>
-                            <shadedPattern>org.elasticsearch.common.compress</shadedPattern>
-                        </relocation>
-                        <relocation>
-                        <pattern>com.github.mustachejava</pattern>
-                            <shadedPattern>org.elasticsearch.common.mustache</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>com.tdunning.math.stats</pattern>
-                            <shadedPattern>org.elasticsearch.common.stats</shadedPattern>
-                        </relocation>
-                    </relocations>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/license/**</exclude>
-                                <exclude>META-INF/*</exclude>
-                                <exclude>META-INF/maven/**</exclude>
-                                <exclude>LICENSE</exclude>
-                                <exclude>NOTICE</exclude>
-                                <exclude>/*.txt</exclude>
-                                <exclude>build.properties</exclude>
-                            </excludes>
-                        </filter>
-                        <filter>
-                            <artifact>io.netty:netty</artifact>
-                            <includes>
-                                <include>org/jboss/netty/**</include>
-                            </includes>
-                        </filter>
-                    </filters>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -810,137 +914,6 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
                             <includeScope>runtime</includeScope>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- some infos https://github.com/tcurdt/jdeb/blob/master/docs/maven.md
-                -->
-                <artifactId>jdeb</artifactId>
-                <groupId>org.vafer</groupId>
-                <version>1.0.1</version>
-                <configuration>
-                    <deb>${project.build.directory}/releases/${project.artifactId}-${project.version}.deb</deb>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jdeb</goal>
-                        </goals>
-                        <configuration>
-                            <dataSet>
-                                <data>
-                                    <src>${project.basedir}/</src>
-                                    <includes>*.txt, *.textile</includes>
-                                    <excludes>LICENSE.txt, .DS_Store</excludes>
-                                    <type>directory</type>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/usr/share/elasticsearch</prefix>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
-                                </data>
-                                <data>
-                                    <!-- use the filtered one from the resources plugin -->
-                                    <src>${project.build.directory}/bin</src>
-                                    <type>directory</type>
-                                    <excludes>*.bat, .DS_Store, *.exe</excludes>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/usr/share/elasticsearch/bin</prefix>
-                                        <filemode>755</filemode>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
-                                </data>
-                                <data>
-                                    <src>${project.build.directory}/</src>
-                                    <includes>${project.build.finalName}.jar</includes>
-                                    <type>directory</type>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/usr/share/elasticsearch/lib</prefix>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
-                                </data>
-                                <data>
-                                    <src>${project.basedir}/lib/sigar/</src>
-                                    <includes>sigar-*.jar, libsigar-*-linux.*</includes>
-                                    <type>directory</type>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/usr/share/elasticsearch/lib/sigar</prefix>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
-                                </data>
-                                <data>
-                                    <src>${project.build.directory}/lib</src>
-                                    <includes>lucene*, log4j*, jna*, spatial4j*, jts*, groovy*</includes>
-                                    <type>directory</type>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/usr/share/elasticsearch/lib</prefix>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
-                                </data>
-                                <data>
-                                    <src>${project.basedir}/src/deb/default/</src>
-                                    <type>directory</type>
-                                    <excludes>.DS_Store</excludes>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/etc/default</prefix>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
-                                </data>
-                                <data>
-                                    <src>${project.basedir}/src/deb/init.d/</src>
-                                    <type>directory</type>
-                                    <excludes>.DS_Store</excludes>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/etc/init.d</prefix>
-                                        <filemode>755</filemode>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
-                                </data>
-                                <data>
-                                    <src>${project.basedir}/config</src>
-                                    <type>directory</type>
-                                    <excludes>.DS_Store</excludes>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/etc/elasticsearch</prefix>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
-                                </data>
-                                <data>
-                                    <src>${project.basedir}/src/deb/lintian</src>
-                                    <type>directory</type>
-                                    <excludes>.DS_Store</excludes>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/usr/share/lintian/overrides</prefix>
-                                        <user>root</user>
-                                        <group>root</group>
-                                    </mapper>
-                                </data>
-                                <data>
-                                    <src>${project.basedir}/src/deb/copyright</src>
-                                    <dst>/usr/share/doc/elasticsearch/copyright</dst>
-                                    <type>file</type>
-                                </data>
-                            </dataSet>
-
                         </configuration>
                     </execution>
                 </executions>
@@ -1219,9 +1192,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
+                <version>2.5</version>
                 <executions>
                     <execution>
+                        <id>tests</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>test-jar</goal>
@@ -1239,8 +1213,105 @@
                             </excludes>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>all-tests</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.artifactId}-alltests-${project.version}</finalName>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <excludes>
+                                <exclude>org/elasticsearch/test/rest/test/**/*</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>all-tests-jar</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.artifactId}-alltests-${project.version}</finalName>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <excludes>
+                                <exclude>org/elasticsearch/test/rest/test/**/*</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>test-jar</packaging>
+                            <artifactId>${project.artifactId}-alltests</artifactId>
+                            <groupId>${project.groupId}</groupId>
+                            <version>${project.version}</version>
+                            <file>${project.build.directory}/${project.artifactId}-alltests-${project.version}-tests.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>test-jar</packaging>
+                            <generatePom>true</generatePom>
+                            <url>${project.distributionManagement.repository.url}</url>
+                            <artifactId>${project.artifactId}-alltests</artifactId>
+                            <groupId>${project.groupId}</groupId>
+                            <version>${project.version}</version>
+                            <file>${project.build.directory}/${project.artifactId}-alltests-${project.version}-tests.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>attach-artifacts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.build.directory}/${project.artifactId}-alltests-${project.version}-tests.jar</file>
+                                    <type>test-jar</type>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            -->
         </plugins>
         <pluginManagement>
             <plugins>
