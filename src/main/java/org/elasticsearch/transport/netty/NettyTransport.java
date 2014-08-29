@@ -947,6 +947,7 @@ public class NettyTransport extends AbstractLifecycleComponent<Transport> implem
             closeChannelsAndWait(reg, futures);
             closeChannelsAndWait(state, futures);
             closeChannelsAndWait(ping, futures);
+
             for (ChannelFuture future : futures) {
                 future.awaitUninterruptibly();
             }
