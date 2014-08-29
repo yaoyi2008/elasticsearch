@@ -629,39 +629,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>attach-test-sources</id>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                        <configuration>
-                            <includes>
-                                <include>org/elasticsearch/test/**/*</include>
-                                <include>org/apache/lucene/util/AbstractRandomizedTest.java</include>
-                            </includes>
-                            <excludes>
-                                <!-- unit tests for yaml suite parser & rest spec parser need to be excluded -->
-                                <exclude>org/elasticsearch/test/rest/test/**/*</exclude>
-                                <!-- unit tests for test framework classes-->
-                                <exclude>org/elasticsearch/test/test/**/*</exclude>
-                            </excludes>
-                            <!-- Resources are large and not really helpful as "test sources". -->
-                            <excludeResources>true</excludeResources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.3</version>
                 <executions>
@@ -674,7 +641,7 @@
                 </executions>
                 <configuration>
                     <shadeTestJar>true</shadeTestJar>
-                    <minimizeJar>true</minimizeJar>
+                    <minimizeJar>false</minimizeJar>
                     <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                     <artifactSet>
                         <includes>
@@ -1252,33 +1219,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                        <configuration>
-                            <includes>
-                                <include>org/elasticsearch/test/**/*</include>
-                                <include>org/elasticsearch/cache/recycler/MockPageCacheRecycler.class</include>
-                                <include>org/apache/lucene/util/AbstractRandomizedTest.class</include>
-                                <include>org/apache/lucene/util/AbstractRandomizedTest$*.class</include>
-                                <include>org/elasticsearch/common/cli/CliToolTestCase.class</include>
-                                <include>org/elasticsearch/common/cli/CliToolTestCase$*.class</include>
-                            </includes>
-                            <excludes>
-                                <!-- unit tests for yaml suite parser & rest spec parser need to be excluded -->
-                                <exclude>org/elasticsearch/test/rest/test/**/*</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -1577,6 +1517,136 @@
                     </plugin>
                 </plugins>
             </reporting>
+      </profile>
+      <profile>
+          <id>package-tests</id>
+          <activation>
+              <activeByDefault>true</activeByDefault>
+          </activation>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-source-plugin</artifactId>
+                      <version>2.2.1</version>
+                      <executions>
+                          <execution>
+                              <id>attach-sources</id>
+                              <goals>
+                                  <goal>jar</goal>
+                              </goals>
+                          </execution>
+                          <execution>
+                              <id>attach-test-sources</id>
+                              <goals>
+                                  <goal>test-jar</goal>
+                              </goals>
+                              <configuration>
+                                  <includes>
+                                      <include>org/elasticsearch/test/**/*</include>
+                                      <include>org/apache/lucene/util/AbstractRandomizedTest.java</include>
+                                  </includes>
+                                  <excludes>
+                                      <!-- unit tests for yaml suite parser & rest spec parser need to be excluded -->
+                                      <exclude>org/elasticsearch/test/rest/test/**/*</exclude>
+                                  </excludes>
+                                  <!-- Resources are large and not really helpful as "test sources". -->
+                                  <excludeResources>true</excludeResources>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-jar-plugin</artifactId>
+                      <version>2.4</version>
+                      <executions>
+                          <execution>
+                              <phase>prepare-package</phase>
+                              <goals>
+                                  <goal>test-jar</goal>
+                              </goals>
+                              <configuration>
+                                  <includes>
+                                      <include>org/elasticsearch/test/**/*</include>
+                                      <include>org/elasticsearch/cache/recycler/MockPageCacheRecycler.class</include>
+                                      <include>org/apache/lucene/util/AbstractRandomizedTest.class</include>
+                                      <include>org/apache/lucene/util/AbstractRandomizedTest$*.class</include>
+                                      <include>org/elasticsearch/common/cli/CliToolTestCase.class</include>
+                                      <include>org/elasticsearch/common/cli/CliToolTestCase$*.class</include>
+                                  </includes>
+                                  <excludes>
+                                      <!-- unit tests for yaml suite parser & rest spec parser need to be excluded -->
+                                      <exclude>org/elasticsearch/test/rest/test/**/*</exclude>
+                                  </excludes>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
+      <profile>
+            <id>package-all-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-source-plugin</artifactId>
+                      <version>2.2.1</version>
+                      <executions>
+                          <execution>
+                              <id>attach-sources</id>
+                              <goals>
+                                  <goal>jar</goal>
+                              </goals>
+                          </execution>
+                          <execution>
+                              <id>attach-test-sources</id>
+                              <goals>
+                                  <goal>test-jar</goal>
+                              </goals>
+                              <configuration>
+                                  <includes>
+                                      <include>org/**/*</include>
+                                  </includes>
+                                  <excludes>
+                                      <!-- unit tests for yaml suite parser & rest spec parser need to be excluded -->
+                                      <exclude>org/elasticsearch/test/rest/test/**/*</exclude>
+                                  </excludes>
+                                  <!-- Resources are large and not really helpful as "test sources". -->
+                                  <excludeResources>false</excludeResources>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-jar-plugin</artifactId>
+                      <version>2.5</version>
+                      <executions>
+                          <execution>
+                              <phase>prepare-package</phase>
+                              <goals>
+                                  <goal>test-jar</goal>
+                              </goals>
+                              <configuration>
+                                  <includes>
+                                      <include>**/*</include>
+                                  </includes>
+                                  <excludes>
+                                      <!-- unit tests for yaml suite parser & rest spec parser need to be excluded -->
+                                      <exclude>org/elasticsearch/test/rest/test/**/*</exclude>
+                                  </excludes>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+              </plugins>
+          </build>
         </profile>
     </profiles>
 </project>
