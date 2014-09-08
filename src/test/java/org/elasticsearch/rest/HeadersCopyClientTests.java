@@ -340,7 +340,12 @@ public class HeadersCopyClientTests extends ElasticsearchTestCase {
             assertHeaders(requestBuilder.request(), transportHeaders);
             requestBuilder.get();
             assertHeaders(requestBuilder.request(), expectedHeaders);
-            assertContext(requestBuilder.request(), expectedContext);
+            // The NoOpClient does not copy the rest context, so the assertion must be different
+            if (client instanceof NoOpClient) {
+                assertContext(requestBuilder.request(), transportContext);
+            } else {
+                assertContext(requestBuilder.request(), expectedContext);
+            }
         }
     }
 
