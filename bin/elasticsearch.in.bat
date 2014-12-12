@@ -63,12 +63,12 @@ set JAVA_OPTS=%JAVA_OPTS% -XX:+UseCMSInitiatingOccupancyOnly
 REM When running under Java 7
 REM JAVA_OPTS=%JAVA_OPTS% -XX:+UseCondCardMark
 
-if NOT "%ES_USE_GC_LOGGING%" == "" set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCDetails
-if NOT "%ES_USE_GC_LOGGING%" == "" set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCTimeStamps
-if NOT "%ES_USE_GC_LOGGING%" == "" set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintClassHistogram
-if NOT "%ES_USE_GC_LOGGING%" == "" set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintTenuringDistribution
-if NOT "%ES_USE_GC_LOGGING%" == "" set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCApplicationStoppedTime
-if NOT "%ES_USE_GC_LOGGING%" == "" set JAVA_OPTS=%JAVA_OPTS% -Xloggc:%ES_HOME%/logs/gc.log
+if NOT "%ES_GC_LOG_FILE%" == "" set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCDetails
+if NOT "%ES_GC_LOG_FILE%" == "" set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCTimeStamps
+if NOT "%ES_GC_LOG_FILE%" == "" set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintClassHistogram
+if NOT "%ES_GC_LOG_FILE%" == "" set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintTenuringDistribution
+if NOT "%ES_GC_LOG_FILE%" == "" set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCApplicationStoppedTime
+if NOT "%ES_GC_LOG_FILE%" == "" set JAVA_OPTS=%JAVA_OPTS% -Xloggc:%ES_GC_LOG_FILE%
 
 REM Causes the JVM to dump its heap on OutOfMemory.
 set JAVA_OPTS=%JAVA_OPTS% -XX:+HeapDumpOnOutOfMemoryError
