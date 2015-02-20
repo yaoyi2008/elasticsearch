@@ -1,0 +1,22 @@
+#################
+# Docker file to run the rest tests for the packages
+################
+#
+# Run with volumes configured appropriately, like this
+#
+# 1. Build the container
+#    docker build -f src/test/docker/Dockerfile-ubuntu-zip -t elasticsearch-rest-tests-ubuntu-zip src/test/docker
+# 2. Run the tests
+#    docker run -v $PWD:/elasticsearch -v $HOME/.m2:/root/.m2 elasticsearch-rest-tests-ubuntu-zip /run-tests-zip.sh
+#
+FROM ubuntu:latest
+MAINTAINER Elasticsearch <info@elasticsearch.com>
+
+RUN apt-get update && apt-get install -y openjdk-7-jdk wget curl unzip maven
+RUN locale-gen en_US.UTF-8 && update-locale LANG=C.UTF-8
+
+ADD run-tests-zip.sh /run-tests-zip.sh
+VOLUME /elasticsearch
+VOLUME /root/.m2
+
+

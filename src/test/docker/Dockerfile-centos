@@ -1,0 +1,28 @@
+#################
+# Docker file to run the rest tests for the packages
+################
+#
+# Run with volumes configured appropriately, like this
+#
+# 1. Build the container
+#    docker build -f src/test/docker/Dockerfile-centos -t elasticsearch-rest-tests-centos src/test/docker
+# 2. Run the tests
+#    docker run -v $PWD:/elasticsearch -v $HOME/.m2:/root/.m2 elasticsearch-rest-tests-centos /run-tests-rpm.sh
+#
+
+# TODO FIXME - systemd does not work yet on docker... maybe the wrong start?
+
+FROM centos:latest
+MAINTAINER Elasticsearch <info@elasticsearch.com>
+
+RUN yum -y update
+RUN yum -y install java-1.7.0-openjdk-devel.x86_64 curl rpm-devel rpm-build maven
+RUN yum install -y initscripts
+
+CMD ["/sbin/init", "3"]
+
+ADD run-tests-rpm.sh /run-tests-rpm.sh
+VOLUME /elasticsearch
+VOLUME /root/.m2
+
+

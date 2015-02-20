@@ -1,0 +1,24 @@
+#################
+# Docker file to run the rest tests for the packages
+################
+#
+# Run with volumes configured appropriately, like this
+#
+# 1. Build the container
+#    docker build -f src/test/docker/Dockerfile-opensuse -t elasticsearch-rest-tests-opensuse src/test/docker
+# 2. Run the tests
+#    docker run -v $PWD:/elasticsearch -v $HOME/.m2:/root/.m2 elasticsearch-rest-tests-opensuse /run-tests-rpm.sh
+#
+FROM opensuse:latest
+MAINTAINER Elasticsearch <info@elasticsearch.com>
+
+RUN zypper -n --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/devel:tools:building/openSUSE_Factory/devel:tools:building.repo
+RUN zypper -n --gpg-auto-import-keys refresh
+RUN zypper -n dist-upgrade
+RUN zypper -n install java-1_7_0-openjdk-devel curl rpm-devel rpm-build maven
+
+ADD run-tests-rpm.sh /run-tests-rpm.sh
+VOLUME /elasticsearch
+VOLUME /root/.m2
+
+
