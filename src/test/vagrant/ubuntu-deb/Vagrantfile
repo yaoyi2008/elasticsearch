@@ -1,0 +1,24 @@
+# To install package execute:
+# vagrant ssh -c 'sudo /elasticsearch/src/test/vagrant/install-elasticsearch-deb.sh'
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # Every Vagrant virtual environment requires a box to build off of.
+  config.vm.box = "ubuntu/trusty64"
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 1024
+    v.cpus = 2
+  end
+
+  config.vm.network "forwarded_port", guest: 9200, host: 9200
+  config.vm.network "forwarded_port", guest: 9300, host: 9300
+
+  config.vm.synced_folder "../../../../", "/elasticsearch", owner: "root", group: "root"
+  config.vm.synced_folder "~/.m2", "/root/.m2"
+  
+  config.vm.provision "shell", inline: "apt-get -y update && apt-get dist-upgrade -y && apt-get install -y openjdk-7-jdk wget curl unzip maven && apt-get -y autoremove"
+
+end
