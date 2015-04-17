@@ -59,6 +59,9 @@ public class FakeRestRequest extends RestRequest {
     }
 
     @Override
+    public void close() {}
+
+    @Override
     public boolean hasContent() {
         return false;
     }

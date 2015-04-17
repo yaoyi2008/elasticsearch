@@ -67,6 +67,9 @@ public class RestRequestTests extends ElasticsearchTestCase {
         }
 
         @Override
+        public void close() {}
+
+        @Override
         public boolean hasContent() {
             return false;
         }

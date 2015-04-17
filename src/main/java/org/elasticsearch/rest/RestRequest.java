@@ -39,7 +39,7 @@ import static org.elasticsearch.common.unit.TimeValue.parseTimeValue;
 /**
  *
  */
-public abstract class RestRequest extends ContextHolder implements ToXContent.Params {
+public abstract class RestRequest extends ContextHolder implements ToXContent.Params, AutoCloseable {
 
     public enum Method {
         GET, POST, PUT, DELETE, OPTIONS, HEAD
@@ -56,6 +56,8 @@ public abstract class RestRequest extends ContextHolder implements ToXContent.Pa
      * The non decoded, raw path provided.
      */
     public abstract String rawPath();
+
+    public abstract void close();
 
     /**
      * The path part of the URI (without the query string), decoded.

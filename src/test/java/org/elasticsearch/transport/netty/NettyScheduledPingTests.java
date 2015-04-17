@@ -30,8 +30,6 @@ import org.elasticsearch.test.ElasticsearchTestCase;
 import org.elasticsearch.test.transport.MockTransportService;
 import org.elasticsearch.threadpool.ThreadPool;
 import org.elasticsearch.transport.*;
-import org.hamcrest.Matchers;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
