@@ -142,7 +142,7 @@ public class ByteBufStreamInput extends StreamInput {
 
     @Override
     public void close() throws IOException {
-        buffer.release();
-        // nothing to do here
+        // TODO releasing the buffer at some time?
+        //buffer.release();
     }
 }

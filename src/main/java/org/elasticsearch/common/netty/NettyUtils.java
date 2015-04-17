@@ -84,9 +84,10 @@ public class NettyUtils {
         });
 
         System.setProperty("io.netty.noPreferDirect", "true");
-        System.setProperty("io.netty.allocator.tinyCacheSize", "0");
-        System.setProperty("io.netty.allocator.smallCacheSize", "0");
-        System.setProperty("io.netty.allocator.normalCacheSize", "0");
+        // just for the pooledbytebufallocator
+        //System.setProperty("io.netty.allocator.tinyCacheSize", "0");
+        //System.setProperty("io.netty.allocator.smallCacheSize", "0");
+        //System.setProperty("io.netty.allocator.normalCacheSize", "0");
 
         /**
          * This is here just to give us an option to rollback the change, if its stable, we should remove

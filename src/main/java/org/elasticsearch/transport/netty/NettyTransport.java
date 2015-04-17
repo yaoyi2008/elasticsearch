@@ -409,9 +409,9 @@ public class NettyTransport extends AbstractLifecycleComponent<Transport> implem
                 try {
                     ChannelFuture channelFuture = serverBootstraps.get(name).bind(new InetSocketAddress(hostAddress, portNumber)).sync();
                     // TODO COMMENT ME also in NETTYHTTPTRANSPORT
-                    if (!channelFuture.isSuccess()) {
-                        throw channelFuture.cause();
-                    }
+//                    if (!channelFuture.isSuccess()) {
+//                        throw channelFuture.cause();
+//                    }
                     serverChannels.put(name, channelFuture.channel());
                 } catch (Throwable e) {
                     lastException.set(e);

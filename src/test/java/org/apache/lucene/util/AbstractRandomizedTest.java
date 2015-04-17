@@ -213,7 +213,8 @@ public abstract class AbstractRandomizedTest extends RandomizedTest {
      */
     private static final String[] IGNORED_INVARIANT_PROPERTIES = {
             "user.timezone", "java.rmi.server.randomIDs", "sun.nio.ch.bugLevel",
-            "solr.directoryFactory", "solr.solr.home", "solr.data.dir" // these might be set by the LuceneTestCase -- ignore
+            "solr.directoryFactory", "solr.solr.home", "solr.data.dir", // these might be set by the LuceneTestCase -- ignore
+            "io.netty.noPreferDirect" // netty setting configured in NettyUtils
     };
 
     // -----------------------------------------------------------------

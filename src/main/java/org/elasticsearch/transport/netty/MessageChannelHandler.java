@@ -228,6 +228,9 @@ public class MessageChannelHandler extends ChannelInboundHandlerAdapter {
             final TransportRequest request = handler.newInstance();
             request.remoteAddress(new InetSocketTransportAddress((InetSocketAddress) channel.remoteAddress()));
             request.readFrom(buffer);
+            // TODO: smart?
+            // decrease the refcnt of the bytebuf with this!
+            buffer.close();
             if (ThreadPool.Names.SAME.equals(handler.executor())) {
                 //noinspection unchecked
                 handler.messageReceived(request, transportChannel);

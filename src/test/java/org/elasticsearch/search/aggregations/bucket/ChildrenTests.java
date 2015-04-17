@@ -30,6 +30,7 @@ import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
 import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.elasticsearch.test.junit.annotations.TestLogging;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -120,6 +121,7 @@ public class ChildrenTests extends ElasticsearchIntegrationTest {
         ensureSearchable("test");
     }
 
+    @TestLogging("_root:DEBUG")
     @Test
     public void testChildrenAggs() throws Exception {
         SearchResponse searchResponse = client().prepareSearch("test")
