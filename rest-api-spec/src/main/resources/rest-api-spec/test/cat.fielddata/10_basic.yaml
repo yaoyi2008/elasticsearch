@@ -39,8 +39,8 @@
 
   - match:
       $body: |
-               /^   total               \s \n
-                    (\s*\d+(\.\d+)?[gmk]?b  \s \n)+ $/
+               /^   total               \n
+                    (\s*\d+(\.\d+)?[gmk]?b  \n)+ $/
 
   - do:
       cat.fielddata:
@@ -49,8 +49,8 @@
 
   - match:
       $body: |
-               /^   total \s+              foo \s+ \n
-                    (\s*\d+(\.\d+)?[gmk]?b \s+ \d+(\.\d+)?[gmk]?b \s \n)+ \s*$/
+               /^   total \s+              foo \n
+                    (\s*\d+(\.\d+)?[gmk]?b \s+ \d+(\.\d+)?[gmk]?b \n)+ $/
 
   - do:
       cat.fielddata:
@@ -60,5 +60,5 @@
 
   - match:
       $body: |
-               /^   total \s+              foo \s+ \n
-                    (\s*\d+(\.\d+)?[gmk]?b \s+ \d+(\.\d+)?[gmk]?b \s \n)+ \s*$/
+               /^   total \s+              foo \n
+                    (\s*\d+(\.\d+)?[gmk]?b \s+ \d+(\.\d+)?[gmk]?b \n)+ $/

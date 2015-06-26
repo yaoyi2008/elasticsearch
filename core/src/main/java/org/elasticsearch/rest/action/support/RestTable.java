@@ -79,7 +79,8 @@ public class RestTable {
             for (int col = 0; col < headers.size(); col++) {
                 DisplayHeader header = headers.get(col);
                 pad(new Table.Cell(header.display, table.findHeaderByName(header.name)), width[col], request, out);
-                if (col != headers.size()-1) {
+                boolean isLastColumn = col == headers.size()-1;
+                if (!isLastColumn) {
                     out.append(" ");
                 }
             }
@@ -90,7 +91,8 @@ public class RestTable {
             for (int col = 0; col < headers.size(); col++) {
                 DisplayHeader header = headers.get(col);
                 pad(table.getAsMap().get(header.name).get(row), width[col], request, out);
-                if (col != headers.size()-1) {
+                boolean isLastColumn = col == headers.size()-1;
+                if (!isLastColumn) {
                     out.append(" ");
                 }
             }
