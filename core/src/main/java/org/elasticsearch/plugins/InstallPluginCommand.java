@@ -19,12 +19,29 @@
 
 package org.elasticsearch.plugins;
 
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
+import org.apache.lucene.util.IOUtils;
+import org.elasticsearch.Version;
+import org.elasticsearch.bootstrap.JarHell;
+import org.elasticsearch.cli.ExitCodes;
+import org.elasticsearch.cli.SettingCommand;
+import org.elasticsearch.cli.Terminal;
+import org.elasticsearch.cli.UserError;
+import org.elasticsearch.common.hash.MessageDigests;
+import org.elasticsearch.common.io.FileSystemUtils;
+import org.elasticsearch.common.io.ProgressInputStream;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.env.Environment;
+import org.elasticsearch.node.internal.InternalSettingsPreparer;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
@@ -47,21 +64,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
-import org.apache.lucene.util.IOUtils;
-import org.elasticsearch.Version;
-import org.elasticsearch.bootstrap.JarHell;
-import org.elasticsearch.cli.ExitCodes;
-import org.elasticsearch.cli.SettingCommand;
-import org.elasticsearch.cli.Terminal;
-import org.elasticsearch.cli.UserError;
-import org.elasticsearch.common.hash.MessageDigests;
-import org.elasticsearch.common.io.FileSystemUtils;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.env.Environment;
-import org.elasticsearch.node.internal.InternalSettingsPreparer;
 
 import static org.elasticsearch.cli.Terminal.Verbosity.VERBOSE;
 
@@ -103,7 +105,7 @@ class InstallPluginCommand extends SettingCommand {
     static final Set<String> MODULES;
     static {
         try (InputStream stream = InstallPluginCommand.class.getResourceAsStream("/modules.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             Set<String> modules = new HashSet<>();
             String line = reader.readLine();
             while (line != null) {
@@ -135,7 +137,9 @@ class InstallPluginCommand extends SettingCommand {
     }
 
     private final OptionSpec<Void> batchOption;
+    private final OptionSpec<Void> quietOption;
     private final OptionSpec<String> arguments;
+
 
     public static final Set<PosixFilePermission> DIR_AND_EXECUTABLE_PERMS;
     public static final Set<PosixFilePermission> FILE_PERMS;
@@ -165,6 +169,8 @@ class InstallPluginCommand extends SettingCommand {
         super("Install a plugin");
         this.batchOption = parser.acceptsAll(Arrays.asList("b", "batch"),
                 "Enable batch mode explicitly, automatic confirmation of security permission");
+        this.quietOption = parser.acceptsAll(Arrays.asList("q", "quiet"),
+                "Quiet output, removes the progress bar on installation");
         this.arguments = parser.nonOptions("plugin id");
     }
 
@@ -186,11 +192,12 @@ class InstallPluginCommand extends SettingCommand {
         }
         String pluginId = args.get(0);
         boolean isBatch = options.has(batchOption) || System.console() == null;
-        execute(terminal, pluginId, isBatch, settings);
+        boolean isQuiet = options.has(quietOption);
+        execute(terminal, pluginId, isBatch, isQuiet, settings);
     }
 
     // pkg private for testing
-    void execute(Terminal terminal, String pluginId, boolean isBatch, Map<String, String> settings) throws Exception {
+    void execute(Terminal terminal, String pluginId, boolean isBatch, boolean isQuiet, Map<String, String> settings) throws Exception {
         final Environment env = InternalSettingsPreparer.prepareEnvironment(Settings.EMPTY, terminal, settings);
         // TODO: remove this leniency!! is it needed anymore?
         if (Files.exists(env.pluginsFile()) == false) {
@@ -198,13 +205,13 @@ class InstallPluginCommand extends SettingCommand {
             Files.createDirectory(env.pluginsFile());
         }
 
-        Path pluginZip = download(terminal, pluginId, env.tmpFile());
+        Path pluginZip = download(terminal, pluginId, isQuiet, env.tmpFile());
         Path extractedZip = unzip(pluginZip, env.pluginsFile());
         install(terminal, isBatch, extractedZip, env);
     }
 
     /** Downloads the plugin and returns the file it was downloaded to. */
-    private Path download(Terminal terminal, String pluginId, Path tmpDir) throws Exception {
+    private Path download(Terminal terminal, String pluginId, boolean isQuiet, Path tmpDir) throws Exception {
         if (OFFICIAL_PLUGINS.contains(pluginId)) {
             final String version = Version.CURRENT.toString();
             final String url;
@@ -224,7 +231,7 @@ class InstallPluginCommand extends SettingCommand {
                         version);
             }
             terminal.println("-> Downloading " + pluginId + " from elastic");
-            return downloadZipAndChecksum(terminal, url, tmpDir);
+            return downloadZipAndChecksum(terminal, isQuiet, url, tmpDir);
         }
 
         // now try as maven coordinates, a valid URL would only have a colon and slash
@@ -233,20 +240,46 @@ class InstallPluginCommand extends SettingCommand {
             String mavenUrl = String.format(Locale.ROOT, "https://repo1.maven.org/maven2/%1$s/%2$s/%3$s/%2$s-%3$s.zip",
                     coordinates[0].replace(".", "/") /* groupId */, coordinates[1] /* artifactId */, coordinates[2] /* version */);
             terminal.println("-> Downloading " + pluginId + " from maven central");
-            return downloadZipAndChecksum(terminal, mavenUrl, tmpDir);
+            return downloadZipAndChecksum(terminal, isQuiet, mavenUrl, tmpDir);
         }
 
         // fall back to plain old URL
         terminal.println("-> Downloading " + URLDecoder.decode(pluginId, "UTF-8"));
-        return downloadZip(terminal, pluginId, tmpDir);
+        return downloadZip(terminal, isQuiet, pluginId, tmpDir);
     }
 
     /** Downloads a zip from the url, into a temp file under the given temp dir. */
-    private Path downloadZip(Terminal terminal, String urlString, Path tmpDir) throws IOException {
+    private Path downloadZip(Terminal terminal, boolean isQuiet, String urlString, Path tmpDir) throws IOException {
         terminal.println(VERBOSE, "Retrieving zip from " + urlString);
         URL url = new URL(urlString);
         Path zip = Files.createTempFile(tmpDir, null, ".zip");
-        try (InputStream in = url.openStream()) {
+        URLConnection urlConnection = url.openConnection();
+        int contentLength = urlConnection.getContentLength();
+        ProgressInputStream.ProgressListener progressListener;
+        if (isQuiet) {
+            progressListener = new ProgressInputStream.ProgressListener();
+        } else {
+            progressListener = new ProgressInputStream.ProgressListener() {
+                private int width = 50;
+
+                @Override
+                public void onProgress(int percent) {
+                    int currentPosition = percent*width/100;
+                    StringBuilder sb = new StringBuilder("\r[");
+                    sb.append(String.join("=", Collections.nCopies(currentPosition, "")));
+                    if (currentPosition > 0 && percent < 100) {
+                        sb.append(">");
+                    }
+                    sb.append(String.join(" ", Collections.nCopies(width - currentPosition, "")));
+                    sb.append("] %s   ");
+                    if (percent == 100) {
+                        sb.append("\n");
+                    }
+                    terminal.getWriter().printf(Locale.ROOT, sb.toString(), percent + "%");
+                }
+            };
+        }
+        try (InputStream in = new ProgressInputStream(urlConnection.getInputStream(), progressListener, contentLength)) {
             // must overwrite since creating the temp file above actually created the file
             Files.copy(in, zip, StandardCopyOption.REPLACE_EXISTING);
         }
@@ -254,8 +287,8 @@ class InstallPluginCommand extends SettingCommand {
     }
 
     /** Downloads a zip from the url, as well as a SHA1 checksum, and checks the checksum. */
-    private Path downloadZipAndChecksum(Terminal terminal, String urlString, Path tmpDir) throws Exception {
-        Path zip = downloadZip(terminal, urlString, tmpDir);
+    private Path downloadZipAndChecksum(Terminal terminal, boolean isQuiet, String urlString, Path tmpDir) throws Exception {
+        Path zip = downloadZip(terminal, isQuiet, urlString, tmpDir);
 
         URL checksumUrl = new URL(urlString + ".sha1");
         final String expectedChecksum;

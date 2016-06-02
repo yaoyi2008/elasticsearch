@@ -67,8 +67,11 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 @LuceneTestCase.SuppressFileSystems("*")
 public class InstallPluginCommandTests extends ESTestCase {
@@ -178,6 +181,10 @@ public class InstallPluginCommandTests extends ESTestCase {
 
     /** creates a plugin .zip and returns the url for testing */
     static String createPlugin(String name, Path structure) throws IOException {
+        return createPlugin(name, structure, false);
+    }
+
+    static String createPlugin(String name, Path structure, boolean createSecurityPolicyFile) throws IOException {
         PluginTestUtil.writeProperties(structure,
             "description", "fake desc",
             "name", name,
@@ -185,6 +192,10 @@ public class InstallPluginCommandTests extends ESTestCase {
             "elasticsearch.version", Version.CURRENT.toString(),
             "java.version", System.getProperty("java.specification.version"),
             "classname", "FakePlugin");
+        if (createSecurityPolicyFile) {
+            String securityPolicyContent = "grant {\n  permission java.lang.RuntimePermission \"setFactory\";\n};\n";
+            Files.write(structure.resolve("plugin-security.policy"), securityPolicyContent.getBytes(StandardCharsets.UTF_8));
+        }
         writeJar(structure.resolve("plugin.jar"), "FakePlugin");
         return writeZip(structure, "elasticsearch");
     }
@@ -204,7 +215,7 @@ public class InstallPluginCommandTests extends ESTestCase {
                     super.jarHellCheck(candidate, pluginsDir);
                 }
             }
-        }.execute(terminal, pluginUrl, true, settings);
+        }.execute(terminal, pluginUrl, true, true, settings);
         return terminal;
     }
 
@@ -561,7 +572,41 @@ public class InstallPluginCommandTests extends ESTestCase {
         assertTrue(terminal.getOutput(), terminal.getOutput().contains("x-pack"));
     }
 
-    // TODO: test batch flag?
+    public void testBatchFlag() throws Exception {
+        MockTerminal terminal = new MockTerminal();
+        installPlugin(terminal, true, true);
+        logger.error("### [{}]", terminal.getOutput());
+        assertThat(terminal.getOutput(), containsString("WARNING: plugin requires additional permissions"));
+    }
+
+    public void testQuietFlagDisabled() throws Exception {
+        MockTerminal terminal = new MockTerminal();
+        installPlugin(terminal, false, false);
+        assertThat(terminal.getOutput(), containsString("100%"));
+    }
+
+    public void testQuietFlagEnabled() throws Exception {
+        MockTerminal terminal = new MockTerminal();
+        installPlugin(terminal, false, true);
+        logger.error("### [{}]", terminal.getOutput());
+        assertThat(terminal.getOutput(), not(containsString("100%")));
+    }
+
+    private void installPlugin(MockTerminal terminal, boolean isBatch, boolean isQuiet) throws Exception {
+        Tuple<Path, Environment> env = createEnv(fs, temp);
+        Path pluginDir = createPluginDir(temp);
+        // if batch is enabled, we also want to add a security policy
+        String pluginZip = createPlugin("fake", pluginDir, isBatch);
+
+        Map<String, String> settings = new HashMap<>();
+        settings.put("path.home", env.v1().toString());
+        new InstallPluginCommand() {
+            @Override
+            void jarHellCheck(Path candidate, Path pluginsDir) throws Exception {
+            }
+        }.execute(terminal, pluginZip, isBatch, isQuiet, settings);
+    }
+
     // TODO: test checksum (need maven/official below)
     // TODO: test maven, official, and staging install...need tests with fixtures...
 }
